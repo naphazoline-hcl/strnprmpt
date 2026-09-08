@@ -11,7 +11,8 @@
 FQF・歪みFQF（提案）・リスク感応IQNの3手法を、自作toy環境「RiskyChain-v0」で学習・評価するPyTorchコード一式を実装し、実行手順書と合わせて提供してください。
 
 ## 環境（厳守）
-- 実行マシン: **AMD Ryzen 7 5825U（8コア16スレッド）・32GB RAM・CPU演算のみ**（PyTorch CPU版）。GPU（A6000）が使える場合のコード互換は維持（`--device auto`）だが、**CPUでの動作を第一に設計**すること。
+- **最重要: サンドボックス内でコードを実行・テスト・検証・デバッグしないこと（`--smoke` の実行も不要）。** コードの実行と検証はユーザーがローカルのWindows環境（Python 3.10+、PyTorch CPU版）で行う。この指示に従わず実行検証を始めるとエージェントの時間上限に達し、成果物（DLボタン付きHTML）が届かなくなる。実行確認なしで出力する以上、構文エラー・未定義変数・import漏れ・tensor の shape 不一致がないよう**静的に特に慎重に**書くこと。
+- 対象マシン: **AMD Ryzen 7 5825U（8コア16スレッド）・32GB RAM・CPU演算のみ**（PyTorch CPU版）。GPU（A6000）が使える場合のコード互換は維持（`--device auto`）だが、**CPUでの動作を第一に設計**すること。
 - 依存: python ≥3.10, torch ≥2.0（CPU可）, gymnasium, numpy, pandas, matplotlib のみ。
 - **実行時間予算（最重要制約）**: 1run（1seed・1手法）をCPUで **≤1時間（目標 ≈15分）**。100k環境ステップ＋評価20回を内包すること。seed 3 × 3手法 = 9run を、4スレッド×3並列で実時間≈1時間で回せる計画であること。
 - 乱数シード固定（torch/numpy/random、環境・リプレイ・初期化・評価で独立の Generator）。`torch.set_num_threads(8)`。
