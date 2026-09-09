@@ -1,0 +1,256 @@
+% =====================================================================
+% beamer_sample_template.tex -- 卒業研究 中間発表スライド推奨テンプレート
+% =====================================================================
+% 特徴:
+%   1. テーマ: Luebeck + orchid + infolines（上部セクションバー＋下部進捗バー）
+%   2. 日本語フォント: ゴシック体（\kanjifamilydefault -> \gtdefault）で視認性を確保
+%   3. 構造化ボックス: block（定義・概要）, alertblock（課題・注意・バイアス）,
+%                    exampleblock（提案手法・定理・主結果・PASS）の積極的活用
+%   4. 組版ルール: 数式・記号は必ず LaTeX 数式記法（$...$ や \[...\]）で整形
+%   5. 多環境対応: pLaTeX+dvipdfmx / LuaLaTeX の両方に対応
+% ---------------------------------------------------------------------
+% ビルド方法:
+%   [推奨] pLaTeX + dvipdfmx:
+%       platex slides.tex && platex slides.tex && dvipdfmx slides.dvi
+%   [代替] LuaLaTeX:
+%       lualatex slides.tex && lualatex slides.tex
+% =====================================================================
+
+\RequirePackage{iftex}
+\ifptex
+  \PassOptionsToPackage{dvipdfmx}{graphicx,xcolor,hyperref}
+\fi
+\documentclass[aspectratio=169, 11pt]{beamer}
+
+% ---------- 日本語環境の設定 ----------
+\ifLuaTeX
+  \usepackage{luatexja}
+  \usepackage[haranoaji]{luatexja-preset}
+\fi
+\ifptex
+  \IfFileExists{bxdpx-beamer.sty}{\usepackage{bxdpx-beamer}}{}
+  \usepackage{atbegshi}
+  \usepackage{pxjahyper} % しおりの文字化け解消
+\fi
+
+% ---------- デザイン・テーマ設定（推奨設定） ----------
+\usetheme{Luebeck}
+\usecolortheme{orchid}
+\usefonttheme{professionalfonts}
+\useinnertheme{circles}
+\useoutertheme{infolines}
+
+% ナビゲーションバー非表示
+\setbeamertemplate{navigation symbols}{}
+% 既定をゴシック体に（スライドの視認性向上・必須）
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+% タイトル・フレームタイトルの配色
+\setbeamercolor{title}{fg=structure, bg=}
+\setbeamercolor{frametitle}{fg=structure, bg=}
+% 箇条書き記号の調整
+\setbeamertemplate{itemize item}{\small\raise0.5pt\hbox{$\bullet$}}
+\setbeamertemplate{itemize subitem}{\tiny\raise1.5pt\hbox{$\blacktriangleright$}}
+
+% ---------- パッケージ ----------
+\usepackage{amsmath, amssymb, amsfonts, latexsym, mathtools, bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, shapes, patterns}
+
+% ---------- カラーコマンド ----------
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\green}[1]{\textcolor{green!40!black}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue!80!black}{#1}}
+
+% ---------- 数式マクロ定義 ----------
+\expandafter\let\csname Finv\endcsname\undefined
+\newcommand{\Finv}{F^{-1}}
+\newcommand{\Fhinv}{\hat{F}^{-1}}
+\DeclareMathOperator{\CVaR}{CVaR}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% ---------- 表題情報（個人情報は仮置き厳守） ----------
+\title[歪み重み付き1-Wasserstein距離によるquantile fraction学習]{歪み関数重み付き1-Wasserstein距離に基づく\\quantile fraction学習とCVaR推定誤差の低減}
+\subtitle{卒業研究 中間発表}
+\author{【氏名】}
+\institute{【研究室名】 \quad 指導教員：【指導教員名】}
+\date{2026年10月2日}
+
+% =====================================================================
+% 本文開始
+% =====================================================================
+\begin{document}
+
+% --------------------------------------------------
+% 1. 表紙
+% --------------------------------------------------
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% --------------------------------------------------
+% 2. 目次
+% --------------------------------------------------
+\begin{frame}{目次}
+  \tableofcontents
+\end{frame}
+
+% ==================================================
+\section{研究背景と課題}
+% ==================================================
+
+% --------------------------------------------------
+% 3. 研究背景と課題（alertblock・2カラムの例）
+% --------------------------------------------------
+\begin{frame}{研究背景：下側裾の評価誤差がヘッジ方策を損なう}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \begin{block}{リスク感応型強化学習とCVaR}
+        \begin{itemize}
+          \item 収益分布の下側 $\alpha$ 部分の平均である \alert{CVaR} を最適化基準とする。
+          \item CVaR の推定精度は\textbf{下側裾の近似精度}に支配される：
+          \vspace{-4pt}
+          \[
+            \CVaR_\alpha(Z) = \frac{1}{\alpha}\int_0^{\alpha} \Finv(\tau)\,d\tau
+          \]
+          \vspace{-6pt}
+        \end{itemize}
+      \end{block}
+      
+      \begin{alertblock}{既存手法の課題（問題意識）}
+        \begin{itemize}
+          \item 有限個の原子で近似すると、下側裾 $[0,\alpha]$ の原子が不足する。
+          \item ヘビーテイル損失を持つ環境では、この近似誤差が\red{ヘッジ方策を破綻}させる。
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+
+    \begin{column}{0.43\textwidth}
+      \centering
+      % 図またはTikZの配置例
+      \begin{tikzpicture}[scale=0.62]
+        \fill[red!15,domain=-3.5:-1.65,variable=\x]
+          (-3.5,0) -- plot ({\x},{2.4*exp(-\x*\x/2.5)}) -- (-1.65,0) -- cycle;
+        \draw[thick,domain=-3.5:2.5,smooth,variable=\x]
+          plot ({\x},{2.4*exp(-\x*\x/2.5)});
+        \draw[->] (-3.8,0) -- (2.8,0) node[right] {\footnotesize 損益};
+        \draw[dashed] (-1.65,0) -- (-1.65,1.5) node[above] {\footnotesize $\Finv(\alpha)$};
+        \node[font=\scriptsize,align=center,red] at (-2.6,1.2) {下側裾\\$[0,\alpha]$};
+        \foreach \x in {-3.2,-2.8,-2.4,-2.0} {\draw[red,very thick] (\x,-0.15) -- (\x,0.15);}
+        \foreach \x in {-1.0,0,1.0,1.8} {\draw[blue,thick] (\x,-0.15) -- (\x,0.15);}
+        \node[font=\tiny,red] at (-2.6,-0.4) {原子が必要};
+        \node[font=\tiny,blue] at (1.0,-0.4) {一様原子};
+      \end{tikzpicture}
+      \vspace{4pt}
+      {\footnotesize \textbf{図：下側裾における原子の偏在課題}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==================================================
+\section{提案手法}
+% ==================================================
+
+% --------------------------------------------------
+% 4. 提案手法（exampleblock・数式整形の例）
+% --------------------------------------------------
+\begin{frame}{提案手法：歪み重み付き1-Wasserstein距離による学習}
+  \begin{block}{歪み重み付き1-Wasserstein損失 $L_g$}
+    {\small
+    真の分位点関数 $\Finv$ に対し、歪み関数の微分 $g'$ で重み付けした $W_1$ 損失を最小化する：
+    \vspace{-4pt}
+    \[
+      L_g(\tau_{1:N-1}) = \sum_{i=0}^{N-1}\int_{\tau_i}^{\tau_{i+1}} g'(\tau)\bigl|\Finv(\tau) - \Finv(\hat{\tau}_i)\bigr|\,d\tau
+    \]
+    \vspace{-6pt}
+    }
+  \end{block}
+
+  \begin{exampleblock}{Proposition（quantile fractionに関する勾配）}
+    {\small
+    原子を $g$-中央値 $\hat{\tau}_i$（$g(\hat{\tau}_i) = \frac{g(\tau_i)+g(\tau_{i+1})}{2}$）に置くとき、
+    境界 $\tau_i$ に関する勾配は\green{簡潔な解析形}となる：
+    \vspace{-4pt}
+    \[
+      \frac{\partial L_g}{\partial \tau_i} = \alert{g'(\tau_i)}\bigl[2\Finv(\tau_i) - \Finv(\hat{\tau}_i) - \Finv(\hat{\tau}_{i-1})\bigr]
+    \]
+    \vspace{-6pt}
+    }
+  \end{exampleblock}
+
+  \begin{itemize}\setlength{\itemsep}{2pt}
+    \item FQF原論文の一様重み勾配に対して \alert{$g'(\tau_i)$ 倍}するのみで実装可能（最小限のコード改変）。
+    \item CVaR（$g'(\tau) = 1/\alpha \cdot \mathbb{I}\{\tau \le \alpha\}$）では勾配が下側裾 $[0,\alpha]$ の原子を強力に牽引。
+  \end{itemize}
+\end{frame}
+
+% ==================================================
+\section{数値実験}
+% ==================================================
+
+% --------------------------------------------------
+% 5. 実験結果（図の配置・数値表・PASS判定の例）
+% --------------------------------------------------
+\begin{frame}{実験A：1D量子化デモにおけるCVaR推定誤差の低減}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \centering
+      % 実在する図ファイルを参照（width/height指定）
+      \includegraphics[width=\linewidth,height=3.8cm,keepaspectratio]{fig3_placement.png}\\
+      {\scriptsize \textbf{図：quantile fraction の配置比較}}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=3.8cm,keepaspectratio]{fig4_error.png}\\
+      {\scriptsize \textbf{図：点数 $N$ と CVaR 推定誤差の関係}}
+    \end{column}
+  \end{columns}
+
+  \vspace{4pt}
+  \begin{exampleblock}{主結果：判定基準 $R \ge 2$ を全分布で大幅にクリア}
+    \centering\footnotesize
+    \begin{tabular}{lcccc}
+      \toprule
+      分布 & 一様配置誤差 & 歪み最適誤差 & 改善比 $R$ & 判定 \\
+      \midrule
+      D1 ガウス混合 & $0.309$ & $0.00316$ & \textbf{97.9} & \green{PASS} \\
+      D2 負の対数正規 & $2.12$ & $0.0404$ & \textbf{52.4} & \green{PASS} \\
+      D3 Student-$t$ ($\nu=3$) & $0.974$ & $0.0246$ & \textbf{39.6} & \green{PASS} \\
+      \bottomrule
+    \end{tabular}
+  \end{exampleblock}
+\end{frame}
+
+% ==================================================
+\section{まとめ}
+% ==================================================
+
+% --------------------------------------------------
+% 6. まとめと今後の課題
+% --------------------------------------------------
+\begin{frame}{まとめと今後の計画}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{本研究の成果}
+        \begin{itemize}\setlength{\itemsep}{3pt}
+          \item 歪み重み付き $W_1$ による勾配導出（FQFの $g'$ 倍）。
+          \item 実験A（1D量子化）：全分布で $R \ge 39.6$ を達成（点数換算 16点 $\approx$ 一様695点）。
+          \item 実験B（RiskyChain）：FQF比で推定MAEを約 $1/5$ に低減。
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{今後の計画}
+        \begin{itemize}\setlength{\itemsep}{3pt}
+          \item デルタヘッジ環境の実装と評価。
+          \item 誤差上界の $1/\alpha$ 改善の厳密な証明。
+          \item FPN初期化問題（$g$-uniform初期化・エントロピー正則化）の検証。
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\end{document}
