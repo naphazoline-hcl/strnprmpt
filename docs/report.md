@@ -513,7 +513,7 @@ $\lambda$ は「分布全体をどの程度保持するか」を制御するパ�
 (c) 歪み重み付き $W_1$ と損失設計，(d) 統計・最適輸送における歪み尺度の最適量子化，の4観点で文献調査を行った．
 結論として，**本稿で実施した文献検索の範囲では，FPN の損失を歪み重み付き Wasserstein 距離に置換し，quantile fraction学習を歪み分布の最適量子化として定式化した先行研究は確認できなかった**．
 不在の証拠として，arXiv・OpenReview・NeurIPS/ICML/ICLR 予稿集に対し
-“ fully parameterized quantile function”\ と risk-sensitive / CVaR / distortion，“ fraction proposal network”\ と CVaR / risk measure を組み合わせたクエリで
+“fully parameterized quantile function” と risk-sensitive / CVaR / distortion，“fraction proposal network” と CVaR / risk measure を組み合わせたクエリで
 2024〜2026年のプレプリントを中心に検索したが，該当文献は得られなかった．
 調査の実施と引用の実在性・内容の検証は 2026-09-08 に行い，FQF 原論文の被引用文献の走査も併せて実施した（詳細は本稿の範囲を超えるため割愛する）．
 なおこの結論は不在の証明ではなく，検索範囲の限定に従うものである．
@@ -524,7 +524,7 @@ $\lambda$ は「分布全体をどの程度保持するか」を制御するパ�
 | FQF [1] | quantile fractionを一様 $W_1$ 最小化で学習 | 目的関数がリスク尺度と無関係．本提案は $g$ で重み付け |
 | IQN [2] | 行動選択時に $\tau$ のサンプリング分布を歪めてリスク感応方策 | 学習時の $\tau$ 配置は一様．表現の解像度は変えない |
 | Moghimi and Ku [5] | 静的スペクトルリスク尺度を最適化する分布型RL | 最適化対象は方策．近似ノードの再配置は行わない |
-| Zhang [6]（単著・査読なしプレプリント） | ヘッジングで $\tau$ サンプリングを裾に集中させる Tail-Coverage Controller | 発見的な温度制御であり，Wasserstein 最適量子化に基づく理論的特徴づけをもたない |
+| Zhang [6]（単著・査読なしプレプリント，arXiv:2510.04555） | ヘッジングで $\tau$ サンプリングを裾に集中させる Tail-Coverage Controller | 発見的な温度制御であり，Wasserstein 最適量子化に基づく理論的特徴づけをもたない |
 | Graf and Luschgy [7] | 確率分布の最適量子化理論 | 静的な確率論の枠組み．RL のquantile fraction学習との接続は本提案 |
 | Lim and Malik [9] | リスク感応方策のための分布型RL（CVaR の時間不整合の指摘を含む） | 近似表現の設計ではなく方策最適化の枠組み |
 | Rockafellar and Uryasev [8] | CVaR の変分表現と凸最適化 | 分布近似誤差の議論は含まない |
@@ -597,8 +597,8 @@ $N\ge16$ における log-log 傾きは約 $-1.8$ で，最適量子化理論の
 命題3.1の上界は絶対値の積分であって相殺を考慮しないことによる．
 すなわち観測された速い減衰はバウンドの緩さを示しており，理論の精密化の余地がある（第6節）．
 
-![$\mathrm{CVaR](fig_error.png)
-*図：$\mathrm{CVaR*
+![CVaRα 推定誤差 e 対 N（log-log）．列：D1/D2/D3，行：α∈{0.01,0.05,0.1}，線：M0/M1/M2．破線は参照傾き −1．](fig_error.png)
+*図：CVaRα 推定誤差 e 対 N（log-log）．列：D1/D2/D3，行：α∈{0.01,0.05,0.1}，線：M0/M1/M2．破線は参照傾き −1．*
 
 N-equivalence（図3）では，$\alpha=0.05$ において，D1 ガウス混合では M2 の16点と同等の誤差を一様配置が達成するには約695点が必要であった（$N=8$ の場合は約257点）．
 一方，D2・D3 では $N=16$ の M2 の誤差が大きく，探索上限の1024点でも一様配置は同等の精度に達しなかった（図では数値を省略）．
@@ -687,8 +687,8 @@ B1 の下側裾quantile fraction数は状態あたり $0.48\pm0.38$ 個（B0 は
 
 *表4：実験B最終指標（100k ステップ，3シード平均$\pm$SD）．M-est は $\mathrm{CVaR}_{0.05}$ 推定 MAE．「限定」はCVaR最適閾値方策が切り替わる状態に限定した MAE．実時間は各シードの1試行当たりの実行時間を3シードで平均した値である．*
 
-![M-est：$\mathrm{CVaR](figB2_estimation.png)
-*図：M-est：$\mathrm{CVaR*
+![M-est：CVaR(α=0.05) 推定 MAE の学習曲線（y軸 log，3シード平均±SD，細線は各シード）．](figB2_estimation.png)
+*図：M-est：CVaR(α=0.05) 推定 MAE の学習曲線（y軸 log，3シード平均±SD，細線は各シード）．*
 
 B1 の SD が大きい（$\pm0.75$）のは seed 0 においてquantile fractionが裾へ移動せず MAE $2.44$ に留まったためであり，
 他の2シードとの差は FPN の局所解・初期化敏感性に起因する．
