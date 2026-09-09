@@ -1,0 +1,96 @@
+% yoshi.tex --- MIプログラム 中間発表予稿（A4・2段組・2ページ）
+% コンパイル: platex yoshi.tex && dvipdfmx yoshi.dvi
+\documentclass[a4paper,twocolumn,10pt]{jsarticle}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{url}
+\setlength{\columnsep}{7mm}
+\setlength{\textheight}{250mm}
+\setlength{\topmargin}{-15mm}
+\setlength{\textwidth}{175mm}
+\setlength{\oddsidemargin}{-7mm}
+\setlength{\evensidemargin}{-7mm}
+\setlength{\parindent}{1zw}
+\pagestyle{empty}
+
+\begin{document}
+
+\twocolumn[{%
+\begin{center}
+{\normalsize 2026年10月2日(金)\quad MIプログラム\quad 中間発表}\par\vspace{3mm}
+{\LARGE\bfseries 歪み関数重み付き1-Wasserstein距離に基づく}\par\vspace{1mm}
+{\LARGE\bfseries quantile fraction学習とCVaR推定誤差の低減}\par\vspace{4mm}
+{\normalsize 発表者: 【氏名】\qquad 所属: 【研究室名】\qquad 指導教員: 【指導教員名】}
+\end{center}
+\vspace{4mm}
+}]
+
+\section{はじめに}
+金融派生商品のヘッジでは，損益分布の下側裾に生じる大きな損失をいかに抑えるかが本質的な問題となる．条件付きバリューアットリスク（CVaR）はこの目的に広く用いられるリスク尺度であり，CVaRに基づくヘッジ方策の学習には損益分布の下側裾を正確に評価することが不可欠である．分布型強化学習（分布型RL）はリターンの期待値ではなく分布そのものを学習する枠組みであり，リスク感応的な意思決定への応用が期待されている．しかし，QR-DQN，IQN\cite{iqn}，FQF\cite{fqf}といった分位点回帰型の既存手法は，真の分位点関数$F^{-1}$と近似分位点関数$\hat F^{-1}$の間の1-Wasserstein距離
+\begin{equation}
+W_1=\int_0^1 \bigl|F^{-1}-\hat F^{-1}\bigr|\,d\tau
+\end{equation}
+を実質的に最小化する．この距離は区間$[0,1]$のすべての$\tau$に一様な重みを与えるため，有限個の原子（離散分布に確率質量を置く点）が分布のサポート（分布が確率質量をもつ値の範囲）全体に均等に配分され，CVaRの評価に必要な下側裾の解像度が不十分となる．とりわけ，裾が正規分布より重く，稀だが巨大な損失が無視できない確率で発生する型の分布（ヘビーテイル分布）では，この解像度不足がCVaR推定誤差として顕在化する．本研究では，リスク尺度を規定する歪み関数を損失に組み込み，quantile fractionの配置自体をCVaR推定に対して最適化する手法を提案する．
+
+\section{関連技術・先行研究}
+分位点回帰型分布型RLは，リターン分布を有限個の分位点で表現し，分位点回帰損失によって学習する．FQF\cite{fqf}は図\ref{fig:fqf}に示すように，状態表現からquantile fraction（確率質量の区切り位置. FQF が導入した用語）$\tau_i$を出力するFraction Proposal Network（FPN）と，$\tau_i$をコサイン基底で埋め込んで分位点値を出力する分位点値ネットワークからなる．FPNは$W_1$を近似的に最小化するよう学習されるため，$\tau_i$は一様重みの下での最適量子化点へ収束する．
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig1_fqf_overview.png}
+\caption{FQFの概要．状態表現からFPNがquantile fraction $\tau_i$を提案し，分位点値ネットワークが対応する分位点値を出力する．}
+\label{fig:fqf}
+\end{figure}
+
+リスク尺度については，歪み関数$g$を用いた歪みリスク尺度が分位点関数の積分
+\begin{equation}
+\rho_g(Z)=\int_0^1 F^{-1}\,dg(\tau)
+\end{equation}
+で表され，$\mathrm{CVaR}_\alpha$は$g(\tau)=\min(\tau/\alpha,1)$に対応する\cite{rockafellar}．一方，1次元分布を有限個の点で近似する最適量子化の理論\cite{graf}は，重み付き$W_1$を最小化する原子配置の存在と収束率を与える．
+
+先行研究として，IQN\cite{iqn}は歪みリスク尺度を$\tau$の再エンコードとして扱うのみで，分位点の配置は学習しない．Beyond CVaR\cite{beyondcvar}はスペクトルリスク尺度の重みを分位点の「値」に作用させるが，quantile fractionは一様に固定されている．Tail-Safe\cite{tailsafe}は$\tau$のサンプリングを下側裾へヒューリスティックに傾斜させる．いずれも，損失側でquantile fractionの配置をリスク尺度に対して最適化する定式化には至っていない．
+
+\section{研究目的}
+本研究の目的は，FPNの目的関数を一様重みの$W_1$から歪み関数重み付き$W_1$へ置換し，quantile fractionを歪み分布$g_\# Z$の1次元最適量子化点として学習する手法を確立することである．歪みリスク尺度の誤差は
+\begin{equation}\small\begin{gathered}
+|\rho_g(Z)-\rho_g(\hat Z)|\
+\le\!\!\int_0^1\!|F^{-1}-\hat F^{-1}|\!g'(\tau)d\tau\!
+=W_1(g_\# Z,\,g_\#\hat Z)
+\end{gathered}\normalsize\label{eq:bound}\end{equation}
+と上から抑えられるため，この量を直接最小化することで，CVaR推定誤差の上界を一様配置に比べて約$1/\alpha$倍改善することを目指す．
+
+\section{研究方針}
+理論面では，歪み重み付き損失$L_g$のquantile fractionに関する勾配の閉形式を導出する．一様配置における境界勾配を拡張し，
+\begin{equation}
+\frac{\partial L_g}{\partial\tau_i}=g'(\tau_i)\bigl[2F^{-1}(\tau_i)-F^{-1}(\hat\tau_i)-F^{-1}(\hat\tau_{i-1})\bigr]
+\end{equation}
+を得た．ここで$\hat\tau_i$は各区間の原子の位置であり，提案法では原子の位置を区間の中点から$g$-中央値へ変更する．数値面では，既知の分位点関数をもつ1次元分布での量子化デモ，自作toy環境での分布型RL比較，デルタヘッジ環境での実験の3段階で検証を進める．
+
+\section{現在までの進捗}
+まず新規性調査を完了し，前節の3件を含む先行研究のいずれにも損失側でのquantile fraction最適化が存在しないことを確認した．
+
+実験A（1次元量子化デモ）では，ガウス混合$0.9N(0,1)+0.1N(-4,1)$，負の対数正規，Student-t（$\nu=3$）の3分布に対し，$N\in\{8,\dots,256\}$，$\alpha\in\{0.01,0.05,0.1\}$の条件で，一様配置（M0），$g$-uniform（M1），歪み最適配置（M2）のCVaR推定誤差を比較した（マルチスタート5，決定論的）．$\alpha=0.05$，$N=16$において一様配置と歪み最適配置の誤差はそれぞれ，ガウス混合で0.309と0.00316（比$R=97.9$），負の対数正規で2.12と0.0404（$R=52.4$），Student-tで0.974と0.0246（$R=39.6$）であり，判定基準$R\ge 2$を全分布で満たした．歪み最適配置は15個の内部quantile fractionのうち13個を下側裾$[0,\alpha]$に配置し（一様配置は0個），点数換算では歪み最適16点が一様695点に相当する．図\ref{fig:demo}に$N$に対する誤差の収束を示す．log-log傾きは約$-1.8$であった．
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig2_demo.png}
+\caption{実験A: 原子数$N$に対するCVaR推定誤差のlog-log収束（行は$\alpha\in\{0.01,0.05,0.1\}$，代表として$\alpha=0.05$の結果を本文に記載）．歪み最適配置（M2）は一様配置（M0）より一貫して小さい誤差を示す．}
+\label{fig:demo}
+\end{figure}
+
+実験B（toy環境）では，ホライズン10，55状態$\times$2行動，$\gamma=1$で，クラッシュによりヘビーテイル損失が生じる自作環境RiskyChain-v0を構築し，FQF（B0），歪みFQF（B1），リスク感応IQN（B2）を100kステップ・3シードで学習した（CVaR-greedy，$\alpha=0.05$）．全110状態・行動対に対するCVaR推定のMAE（mean$\pm$SD）は，B0が$7.02\pm0.11$，B1が$1.41\pm0.75$，B2が$0.36\pm0.04$であり，歪みFQFはFQF比で約1/5に誤差を低減した．意思決定に関わる状態に限定するとB0=14.41，B1=3.24，B2=0.15であった．リスク感応IQNがさらに小さい誤差を示した要因は，最終目標であるヘッジ環境での本実験において検証する．計算はRyzen 7 5825U・32GB RAMのCPU演算のみで行い，実験Bは1runあたり31〜36分であった．
+
+\section{今後の予定}
+10月にデルタヘッジ環境の実装，11月に本実験とベースライン比較，12月に理論の証明の整備と論文執筆，1月に最終発表準備を行う．
+
+\begin{thebibliography}{9}
+\small
+\bibitem{fqf} D. Yang ほか. Fully Parameterized Quantile Function for Distributional Reinforcement Learning. NeurIPS 2019.
+\bibitem{iqn} W. Dabney ほか. Implicit Quantile Networks for Distributional Reinforcement Learning. ICML 2018.
+\bibitem{beyondcvar} M. Moghimi, H. Ku. Beyond CVaR: Leveraging Static Spectral Risk Measures for Enhanced Decision-Making in Distributional Reinforcement Learning. ICML 2025.
+\bibitem{tailsafe} J. Zhang. Tail-Safe Hedging. arXiv:2510.04555, 2025.
+\bibitem{graf} S. Graf, H. Luschgy. Foundations of Quantization for Probability Distributions. LNM 1730, Springer, 2000.
+\bibitem{rockafellar} R. T. Rockafellar, S. Uryasev. Optimization of Conditional Value-at-Risk. Journal of Risk 2(3), 2000.
+\end{thebibliography}
+
+\end{document}
