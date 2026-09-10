@@ -55,7 +55,7 @@ $N=16$ 個の一様quantile fraction $\tau_i=i/16$ のうちこの区間に入�
 
 ### 1.2 本研究の位置づけと貢献
 
-FQF [1] はquantile fraction（累積確率軸 $[0, 1]$ の区切り位置. FQF が導入した用語）$\tau_i$ 自体を状態依存的に学習する代表的な分布型強化学習手法であり，
+FQF [1] はquantile fraction（累積確率軸 $[0, 1]$ の区切り位置）$\tau_i$ 自体を状態依存的に学習する代表的な分布型強化学習手法であり，
 quantile fractionを一様重み $W_1$ の最小化により決めている．
 本研究はこの FQF の Fraction Proposal Network の目的関数を，歪み関数 $g$ で重み付けした $W_1(g_{\#} Z,g_{\#}\hat{Z})$ に置き換える．
 現時点での貢献は以下の通りである．
