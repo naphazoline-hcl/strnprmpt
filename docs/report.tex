@@ -70,7 +70,7 @@ CVaR推定誤差の低減}\\[0.6cm]
 \addcontentsline{toc}{section}{概要}
 分布型強化学習（distributional reinforcement learning）は，収益（リターン）の期待値ではなく分布そのものを学習することで，
 リスク感応的な意思決定の基盤を与える枠組みである．
-なかでも FQF（Fully Parameterized Quantile Function）\cite{yang2019fqf} は，分位点関数を評価するquantile fraction（確率質量の区切り位置）
+なかでも FQF（Fully Parameterized Quantile Function）\cite{yang2019fqf} は，分位点関数を評価するquantile fraction（累積確率軸 $[0, 1]$ の区切り位置）
 $\tau_1<\dots<\tau_{N-1}$ を Fraction Proposal Network（FPN）により状態依存的に学習し，一様重みの1-Wasserstein距離 $\Wone(Z,\hat{Z})$（$Z$ は収益分布，$\hat{Z}$ はその近似分布）を最小化する．
 しかし，金融におけるオプションのデルタヘッジのように，損益分布の下側裾を条件付きバリューアットリスク（CVaR）で評価したい応用では，
 分布全体を一様に近似することが，CVaR推定という目的に対して効率的とは限らない．
@@ -108,7 +108,7 @@ $N=16$ 個の一様quantile fraction $\tau_i=i/16$ のうちこの区間に入�
 近似の「解像度」を下側裾に集中させるべきである}．
 
 \subsection{本研究の位置づけと貢献}
-FQF \cite{yang2019fqf} はquantile fraction（確率質量の区切り位置. FQF が導入した用語）$\tau_i$ 自体を状態依存的に学習する代表的な分布型強化学習手法であり，
+FQF \cite{yang2019fqf} はquantile fraction（累積確率軸 $[0, 1]$ の区切り位置. FQF が導入した用語）$\tau_i$ 自体を状態依存的に学習する代表的な分布型強化学習手法であり，
 quantile fractionを一様重み $\Wone$ の最小化により決めている．
 本研究はこの FQF の Fraction Proposal Network の目的関数を，歪み関数 $g$ で重み付けした $\Wone(\dist Z,\dist\hat{Z})$ に置き換える．
 現時点での貢献は以下の通りである．
@@ -134,7 +134,7 @@ quantile fractionを一様重み $\Wone$ の最小化により決めている．
 \begin{equation}
   (\mathcal{T}^\pi Z)(s,a)\overset{D}{=}R(s,a)+\gamma Z(S',A'),\qquad S'\sim P(\cdot|s,a),\ A'\sim\pi(\cdot|S')
 \end{equation}
-を導入し（$\overset{D}{=}$ は分布として等しいことを表す），これが $p$-Wasserstein 距離の最大値 $\bar d_p(Z_1,Z_2)=\sup_{s,a}W_p(Z_1(s,a),Z_2(s,a))$（$\sup$ は全状態・行動対に対する上限）に関して
+を導入し（$\overset{D}{=}$ は分布として等しいことを表す），これが最大形式の $p$-Wasserstein 距離 $\bar d_p(Z_1,Z_2)=\sup_{s,a}W_p(Z_1(s,a),Z_2(s,a))$（$\sup$ は全状態・行動対に対する上限）に関して
 $\gamma$-縮小写像であることを示した．
 ここで1次元分布 $Z_1,Z_2$ の間の $p$-Wasserstein距離は分位点関数（累積分布関数の一般化逆関数）$F^{-1}_{Z}(\tau)=\inf\{z:F_Z(z)\ge\tau\}$ を用いて
 \begin{equation}
