@@ -1,0 +1,363 @@
+% ============================================================
+% slides_main_fixed_v4.tex  --  卒業研究 中間発表スライド（本番投影用）
+% 歪み関数重み付き1-Wasserstein距離に基づくquantile fraction学習と
+% CVaR推定誤差の低減
+% ------------------------------------------------------------
+% 本番投影用の正式版．本編10枚のみで，QA/Appendix（A1〜A7）は含まない．
+% 文章は slides_script.md の口頭説明で補う前提で削っている．
+% 質疑応答は slides_qa.md ＋ 予備版 slides_concise.pdf（Appendix収録）を使用．
+% コンパイル: lualatex slides_main_fixed_v4.tex（2回実行）
+% ============================================================
+\RequirePackage{iftex}
+\ifdefined\directlua
+  \documentclass[aspectratio=169, 10pt]{beamer}
+  % ---------- 日本語環境 ----------
+  \usepackage{luatexja}
+  \usepackage[haranoaji]{luatexja-preset}
+\else
+  \documentclass[dvipdfmx, aspectratio=169, 10pt]{beamer}
+  % ---------- 日本語環境 ----------
+  \IfFileExists{bxdpx-beamer.sty}{\usepackage{bxdpx-beamer}}{}
+  \usepackage{atbegshi}
+  \usepackage{pxjahyper}
+\fi
+
+% ---------- テーマ・デザイン ----------
+\usetheme{Luebeck}
+\usecolortheme{orchid}
+\usefonttheme{professionalfonts}
+\useinnertheme{circles}
+\useoutertheme{infolines}
+
+\setbeamertemplate{navigation symbols}{}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+\setbeamercolor{title}{fg=structure, bg=}
+\setbeamercolor{frametitle}{fg=structure, bg=}
+\setbeamertemplate{itemize item}{\small\raise0.5pt\hbox{$\bullet$}}
+\setbeamertemplate{itemize subitem}{\tiny\raise1.5pt\hbox{$\blacktriangleright$}}
+\setbeamersize{text margin left=0.5cm, text margin right=0.5cm}
+\setlength{\abovedisplayskip}{3pt}
+\setlength{\belowdisplayskip}{3pt}
+\setlength{\abovedisplayshortskip}{2pt}
+\setlength{\belowdisplayshortskip}{2pt}
+
+\usepackage{amsmath, amssymb, amsfonts, latexsym, mathtools, bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, shapes, patterns}
+\graphicspath{{./}{./figures/}{../Risk-Sensitive-FQF/中間レポート/_figgen/outB/}}
+
+% ---------- カラーマクロ ----------
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\green}[1]{\textcolor{green!40!black}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue!80!black}{#1}}
+
+% ---------- 記号定義 ----------
+\providecommand{\Finv}{}\renewcommand{\Finv}{F^{-1}}
+\providecommand{\Fhinv}{}\renewcommand{\Fhinv}{\hat{F}^{-1}}
+\DeclareMathOperator{\CVaR}{CVaR}
+\DeclareMathOperator{\VaR}{VaR}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ind}{\mathbb{1}}
+\newcommand{\Lg}{L_g}
+\newcommand{\dist}{\mathcal{D}_g}
+
+% ---------- タイトル情報 ----------
+\title[歪み重み付き$W_1$によるquantile fraction学習]{歪み関数重み付き1-Wasserstein距離に基づく\texorpdfstring{\\}{ }quantile fraction学習とCVaR推定誤差の低減}
+\subtitle{卒業研究 中間発表}
+\author[【氏名】]{【氏名】}
+\institute[【研究室名】]{【研究室名】\\ 指導教員：【指導教員名】}
+\date{2026年10月2日}
+
+\begin{document}
+
+% ============================================================
+% 本編 1: タイトル（口頭: slides_script.md §1）
+% ============================================================
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% ============================================================
+% 本編 2: 研究背景（口頭: slides_script.md §2）
+% ============================================================
+\begin{frame}{研究背景：期待値最大化の限界と分布型強化学習}
+  \begin{block}{強化学習の標準的定式化}
+    リターン $Z^\pi(s,a)=\sum_{t\ge 0}\gamma^t R_t$ の期待値 $Q^\pi(s,a)=\E[Z^\pi(s,a)]$ を最大化する．
+  \end{block}
+  \begin{alertblock}{期待値最大化では制御できないもの}
+    破産・クラッシュのような\alert{稀な大損失}は期待値にほぼ寄与せず，
+    \alert{下側リスク}を評価・制御できない．
+  \end{alertblock}
+  \begin{block}{分布型強化学習（Distributional RL）}
+    $Z^\pi$ の\alert{分布そのもの}を学習．
+    実装上は分位点関数 $\Finv(\tau)$（$\tau\in[0,1]$）を\blue{有限個 $N$ の原子}で近似する．
+  \end{block}
+\end{frame}
+
+% ============================================================
+% 本編 3: CVaR と下側裾（口頭: slides_script.md §3）
+% ============================================================
+\begin{frame}{目標リスク尺度：CVaR}
+  \begin{columns}[onlytextwidth, T]
+    \begin{column}{0.55\linewidth}
+      \begin{block}{定義：最悪 $\alpha$ の事象に条件付けた期待リターン}
+        \small
+        \[
+          \CVaR_\alpha(Z) = \frac{1}{\alpha}\int_0^\alpha \Finv(\tau)\,d\tau
+        \]
+        歪み関数 $g(\tau)=\min(\tau/\alpha,\,1)$ を用いると
+        \[
+          \CVaR_\alpha(Z)=\int_0^1 \Finv(\tau)\,g'(\tau)\,d\tau,\quad
+          g'(\tau)=\tfrac{1}{\alpha}\ind[\tau<\alpha]
+        \]
+      \end{block}
+    \end{column}
+    \begin{column}{0.44\linewidth}
+      \centering
+      \begin{tikzpicture}[scale=0.74]
+        \draw[->] (-3.4,0) -- (3.4,0) node[below]{\footnotesize $z$};
+        \draw[->] (0,0) -- (0,1.55);
+        \fill[red!30] plot[domain=-3.2:-1.645, samples=40] (\x,{1.157*exp(-\x*\x/2)}) -- (-1.645,0) -- (-3.2,0) -- cycle;
+        \draw[thick, blue!70!black] plot[domain=-3.2:3.2, samples=80] (\x,{1.157*exp(-\x*\x/2)});
+        \draw[dashed] (-1.645,0) -- (-1.645,0.48);
+        \node[above right=-3pt] at (-1.645,0.38) {\footnotesize $\VaR_\alpha$};
+        \node[red!70!black, below] at (-2.4,-0.02) {\footnotesize 確率 $\alpha$};
+        \node[red!70!black, align=left] at (-3.1, 1.25) {\footnotesize $\CVaR_\alpha$：赤い領域の\\[-2pt] \footnotesize 条件付き期待値};
+        \draw[->, red!70!black] (-2.2, 0.90) to[bend left=15] (-2.1, 0.22);
+        \node[below] at (0,-0.35) {\footnotesize リターン分布の密度（概念図）};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+  \begin{alertblock}{本質的な観察}
+    $\CVaR_\alpha$ の推定精度は\alert{下側裾 $[0,\alpha]$ 上の近似精度のみ}で決まる
+    （$\alpha=0.05$ なら残り $95\%$ の近似は無関係）．
+  \end{alertblock}
+\end{frame}
+
+% ============================================================
+% 本編 4: FQF と課題（口頭: slides_script.md §4）
+% ============================================================
+\begin{frame}{既存手法：FQF とその課題}
+  \begin{columns}[T]
+    \begin{column}{0.58\linewidth}
+      \begin{block}{FQF（Yang et al., 2019）}
+        quantile fraction（累積確率軸の区切り）$0=\tau_0<\tau_1<\dots<\tau_N=1$ を
+        FPN で学習し，原子 $\theta_i=\Finv(\hat\tau_i)$（$\hat\tau_i$：区間中点）で分布を表現．
+        \[
+          \frac{\partial W_1}{\partial \tau_i}=2\Finv(\tau_i)-\Finv(\hat\tau_i)-\Finv(\hat\tau_{i-1}).
+        \]
+      \end{block}
+    \end{column}
+    \begin{column}{0.40\linewidth}
+      \centering
+      \includegraphics[width=0.82\linewidth]{fig1_fqf_overview.png}\\
+      {\scriptsize FQF の概要}
+    \end{column}
+  \end{columns}
+  \begin{alertblock}{課題：一様重みによる解像度配分}
+    固定一様配置では下側裾 $[0,\alpha]$ に置かれる
+    quantile fraction は期待値として\alert{約 $\alpha N$ 個}（$\alpha=0.05,\ N=16$ で約 $0.8$ 個，
+    実際には内部境界は\alert{$0$ 個}）．
+    FQF は配置を学習するが，目的が一様重みのため\alert{裾への集中を直接には促さない}．
+  \end{alertblock}
+\end{frame}
+
+% ============================================================
+% 本編 5: 理論的着想（口頭: slides_script.md §5）
+% ============================================================
+\begin{frame}{理論的着想：CVaR推定誤差の上界}
+  \begin{exampleblock}{命題（CVaR推定誤差の上界）}
+    \[
+      \bigl|\CVaR_\alpha(Z)-\CVaR_\alpha(\hat Z)\bigr|
+      \le W_1\bigl(\dist Z,\, \dist \hat Z\bigr)
+      = \int_0^1 g'(\tau)\,\bigl|\Finv(\tau)-\Fhinv(\tau)\bigr|\,d\tau =: \Lg.
+    \]
+  \end{exampleblock}
+  \begin{columns}[T]
+    \begin{column}{0.5\linewidth}
+      \begin{block}{導かれる設計指針}
+        FQF の目的関数を $W_1\to\Lg$ に置換すれば，母集団設定では
+        \blue{CVaR推定誤差の上界}を最小化する（実装は plug-in 擬似勾配を最適化）．
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\linewidth}
+      \centering
+      \begin{tikzpicture}[xscale=4.4, yscale=0.9]
+        \draw[->] (0,0.7) -- (1.03,0.7) node[right]{\scriptsize $\tau$};
+        \foreach \x in {0.0625,0.125,0.1875,0.25,0.3125,0.375,0.4375,0.5,0.5625,0.625,0.6875,0.75,0.8125,0.875,0.9375}
+          \draw[blue!70!black, thick] (\x,0.6) -- (\x,0.8);
+        \node[left] at (0,0.7) {\scriptsize 一様（$W_1$）};
+        \draw[->] (0,0) -- (1.03,0) node[right]{\scriptsize $\tau$};
+        \fill[red!20] (0,-0.13) rectangle (0.05,0.13);
+        \foreach \x in {0.0035,0.007,0.0105,0.014,0.0175,0.021,0.0245,0.028,0.0315,0.035,0.0385,0.042,0.0455}
+          \draw[red!70!black, thick] (\x,-0.1) -- (\x,0.1);
+        \draw[red!70!black, thick] (0.35,-0.1) -- (0.35,0.1);
+        \draw[red!70!black, thick] (0.7,-0.1) -- (0.7,0.1);
+        \node[left] at (0,0) {\scriptsize 歪み最適（$\Lg$）};
+        \node[below] at (0.025,-0.13) {\scriptsize $[0,\alpha]$};
+        \node[below] at (0.5,-0.3) {\scriptsize quantile fraction 配置の概念図（$N=16$）};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% 本編 6: 提案手法の核心（口頭: slides_script.md §6）
+% ============================================================
+\begin{frame}{提案手法の核心：quantile fraction に関する勾配}
+  \begin{exampleblock}{命題（母集団設定での歪み重み付き目的関数の境界勾配）}
+    各区間の原子を \textbf{$g$-中央値} $\hat\tau_i$，すなわち
+    $g(\hat\tau_i)=\tfrac12\{g(\tau_i)+g(\tau_{i+1})\}$ にとると
+    \[
+      \frac{\partial \Lg}{\partial \tau_i}
+      = \alert{g'(\tau_i)}\,\Bigl[\,2\Finv(\tau_i)-\Finv(\hat\tau_i)-\Finv(\hat\tau_{i-1})\Bigr],
+      \qquad i=1,\dots,N-1 .
+    \]
+  \end{exampleblock}
+  \begin{block}{数理的・実装的な含意}
+    \begin{itemize}
+      \item FQF の勾配に\alert{$g'(\tau_i)$ を乗じるのみ}．ネットワーク構造の変更は不要．
+            実装はネットワーク出力で $\Finv$ を置換した \blue{plug-in 擬似勾配（stop-gradient）}．
+      \item 裾内 $g'(\tau_i)\approx(1-\lambda)/\alpha+\lambda$（$\alpha=0.05,\lambda=0.05$ で約 $19$ 倍），
+            裾外 $\lambda$ $\Rightarrow$ 表現力が\blue{下側裾に集中して配分}される
+            （最適化には正則化 $g_{\alpha,\lambda}$ を使用）．
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+% ============================================================
+% 本編 7: 位置づけ（口頭: slides_script.md §7）
+% ============================================================
+\begin{frame}{先行研究との位置づけ}
+  \begin{block}{リスク感応的な分布型強化学習の主な設計軸}
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{@{}llll@{}}
+      \toprule
+      手法 & 主な変更点 & quantile fraction & CVaR誤差上界 \\
+      \midrule
+      IQN (Dabney+, 2018) & サンプリング側（歪みサンプリング） & 確率的・非学習 & 対応しない \\
+      Beyond CVaR (Moghimi \& Ku, 2025) & 値側（原子の重み付け） & 固定 & 値の重み付けのみ \\
+      Tail-Safe (Zhang, 2025) & 安全制約側 & 固定 & 対応しない \\
+      FQF (Yang+, 2019) & 損失側（一様重み $W_1$） & \green{学習} & 一様 $W_1$ を最小化 \\
+      FQF-SRM (Gan+, 2026) & 評価時歪み（FPN損失は一様） & \green{学習} & 一様 $W_1$ を最小化 \\
+      \textbf{本研究} & \alert{損失側（歪み重み $\Lg$）} & \green{学習} & \alert{$\Lg$ を直接最小化} \\
+      \bottomrule
+    \end{tabular}
+  \end{block}
+  \begin{exampleblock}{本研究の位置づけ}
+    \alert{損失側}で CVaR誤差上界 $\Lg$ に基づき quantile fraction の\alert{配置自体}を最適化する
+    新たなアプローチ（調査した範囲で先例なし）．
+  \end{exampleblock}
+\end{frame}
+
+% ============================================================
+% 本編 8: 実験A（口頭: slides_script.md §8）
+% ============================================================
+\begin{frame}{実験A：1次元最適量子化デモ（$\alpha=0.05,\ N=16$）}
+  真の分位点関数が既知の3分布（D1 ガウス混合，D2 負の対数正規，D3 Student-$t$）で，
+  一様 $W_1$ と歪み $\Lg$ の $N=16$ 点配置を比較．
+  \begin{columns}[onlytextwidth, T]
+    \begin{column}{0.32\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{fig3_placement.png}\\
+      {\footnotesize quantile fraction 配置}
+    \end{column}
+    \begin{column}{0.26\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{fig4_error.png}\\
+      {\footnotesize CVaR 推定誤差}
+    \end{column}
+    \begin{column}{0.39\linewidth}
+      \begin{exampleblock}{主結果（改善比 $R=$ 一様誤差／歪み最適誤差）}
+        \footnotesize
+        \centering
+        \begin{tabular}{@{}lccc@{}}
+          \toprule
+          分布 & 一様 & 歪み最適 & $R$ \\
+          \midrule
+          D1 & $0.309$ & $0.00316$ & $\mathbf{97.9}$ \\
+          D2 & $2.12$ & $0.0404$ & $\mathbf{52.4}$ \\
+          D3 & $0.974$ & $0.0246$ & $\mathbf{39.6}$ \\
+          \bottomrule
+        \end{tabular}
+        \scriptsize
+        \begin{itemize}
+          \item $\alpha N\ge 2$ 最小改善比 \alert{$R=42.3$}（全分布 PASS）
+          \item 下側裾集中：\alert{$13/15$}（一様は $0$）
+          \item 歪み最適 $16$ 点 $\approx$ 一様 \alert{$695$ 点}（D1・$\alpha=0.05$）
+          \item 経験的傾き：M2 \alert{$-1.8$}（二次減衰），M0 $\alert{-0.72}$〜$-1.27$（一次減衰）
+        \end{itemize}
+        \par\vspace{1pt}{\scriptsize ※$N=16$・$\alpha=0.05$ は一様配置が単一分位点のみで CVaR を推定する特殊設定．}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% 本編 9: 実験B（口頭: slides_script.md §9）
+% ============================================================
+\begin{frame}{実験B：強化学習環境 RiskyChain-v0（100kステップ，3シード）}
+  \begin{columns}[onlytextwidth, T]
+    \begin{column}{0.38\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{figB2_estimation_ja.png}\\
+      {\scriptsize CVaR 推定 MAE（M-est）の学習曲線}\\[1pt]
+      {\tiny B0:FQF, B1/B1g:歪みFQF, B2/B2p:IQN}
+    \end{column}
+    \begin{column}{0.60\linewidth}
+      \begin{exampleblock}{主結果（CVaR 推定 MAE：M-est，mean $\pm$ 標本SD, ddof=1）}
+        \footnotesize
+        \centering
+        \setlength{\tabcolsep}{5pt}
+        \begin{tabular}{@{}lcc@{}}
+          \toprule
+          手法 & 方策依存 M-est & all-SAFE 共通参照 \\
+          \midrule
+          FQF（B0） & $7.02\pm0.14$ & $1.88\pm0.14$ \\
+          \textbf{提案 B1g} & $\mathbf{0.96\pm0.51}$ & $\mathbf{0.59\pm0.10}$ \\
+          IQN（B2） & $\mathbf{0.36\pm0.05}$ & $\mathbf{0.35\pm0.05}$ \\
+          \bottomrule
+        \end{tabular}
+        \begin{itemize}
+          \item FQF 比\alert{約 $1/7$}（$7.02\to0.96$），下側裾に\alert{$14.06$個}配置
+          \item B3g 固定配置（FPN凍結・理論配置）でも\alert{$0.74$} $\to$ toy での主因は\blue{理論配置の採用}
+          \item IQN（B2）が最良誤差，一般的優位性は未確認
+        \end{itemize}
+      \end{exampleblock}
+      \begin{alertblock}{留意点}
+        \scriptsize M-est 参照値は各手法の greedy 方策下の分布のもの．共通参照下でも\alert{継続方策の不一致}が残る（厳密な分離は\blue{方策評価モード}で今後実施）．B2p（学習時歪み$\tau$，MAE $3.42$）は sampling 系一般の劣位を示さない．
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% 本編 10: まとめと展望（口頭: slides_script.md §10）
+% ============================================================
+\begin{frame}{まとめと今後の展望}
+  \begin{exampleblock}{達成事項}
+    \begin{itemize}
+      \item \textbf{理論}：CVaR推定誤差の上界 $\Lg$ と，母集団設定の境界勾配（$g'(\tau_i)$ 倍）を導出し plug-in 実装
+      \item \textbf{実験A}：$\alpha N\ge 2$ 最小改善比 \alert{$R=42.3$}（全分布 PASS），$16$ 点 $\approx$ 一様 $695$ 点（D1）
+      \item \textbf{実験B}：CVaR推定 MAE を FQF 比\alert{約 $1/7$} に低減，初期化改善（B1g）で理論配置達成
+      \item \textbf{位置づけの明示}：IQN（B2）最良（$0.36$）・B3g も同程度（$0.74$）$\to$ 一般的優位性は未確認
+    \end{itemize}
+  \end{exampleblock}
+  \begin{block}{卒業研究の完成に向けた計画}
+    \begin{itemize}
+      \item \blue{金融デルタヘッジ環境（実験C）}：日次リヘッジ＋取引コスト，ジャンプ拡散・確率的ボラティリティ拡張，IQN との定量比較
+      \item \blue{理論の定理化}：収束レートの厳密化，有限サンプル誤差評価
+      \item \blue{実験Bの拡充}：シード $10$ 以上・bootstrap 信頼区間，\blue{方策評価モード}による交絡分離，B2p 公平変種，$\alpha$ 変更時の再利用性比較
+      \item \blue{時間整合性}：時間整合な CVaR 方策クラスとの組合せ
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\end{document}
