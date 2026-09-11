@@ -17,7 +17,7 @@
 | 6 | 2:30–3:00 | 提案定理：quantile fraction に関する勾配の閉形式 | exampleblock: $\partial L_g/\partial\tau_i=g'(\tau_i)[2F^{-1}(\tau_i)-F^{-1}(\hat\tau_i)-F^{-1}(\hat\tau_{i-1})]$, $g$-中央値原子 ／ block: 含意（$1/\alpha$ 倍・裾外 0）／ block: アルゴリズム4手順 |
 | 7 | 3:00–3:30 | 先行研究との位置づけ | 比較表（IQN／Beyond CVaR／Tail-Safe／FQF／本研究）／ exampleblock: 損失側で配置自体を最適化する新たなアプローチ |
 | 8 | 3:30–4:00 | 実験A：1次元最適量子化デモ | 図: fig3_placement.png, fig4_error.png ／ exampleblock: $R=97.9/52.4/39.6$, PASS, 13/15 個が下側裾, 16点 $\approx$ 695点 |
-| 9 | 4:00–4:30 | 実験B：RiskyChain-v0 | 図: fig5_curve.png ／ 表: M-est MAE $7.02\pm0.11$ / $1.41\pm0.75$ / $0.36\pm0.04$, 意思決定状態 14.41/3.24/0.15, 裾 quantile fraction 数 $0\to0.48\pm0.38$ ／ alertblock: IQN 優位の留意点 |
+| 9 | 4:00–4:30 | 実験B：RiskyChain-v0 | 図: figB2_estimation_ja.png ／ 表: M-est MAE FQF $7.02\pm0.14$ / 提案B1g $\mathbf{0.96\pm0.51}$ / IQN $\mathbf{0.36\pm0.05}$ / B2p $3.42\pm1.38$, 裾数 $14.06\pm0.11$, 閾値最良 $k^*=0$（1.0000） ／ alertblock: IQN 最良の客観的限定とMC標準誤差の留意点 |
 | 10 | 4:30–5:00 | まとめと今後の展望 | exampleblock: 理論・実験A・実験B の達成事項 ／ block: デルタヘッジ環境, 理論の厳密化, 初期化改善 |
 
 ## Appendix
@@ -29,7 +29,7 @@
 | A3 | 実験Aの詳細設定 | D1〜D3 の定義, 数値積分, マルチスタート最適化, N-equivalence, $\alpha N\ge2$ で最小 $R=42.3$, 傾き約 $-1.8$ |
 | A4 | 想定質問 Q1〜Q3 | IQN との違い／Beyond CVaR との違い／重み付けの自明性 |
 | A5 | 想定質問 Q4〜Q5 | CPU 実験規模／IQN 優位の理由と対策 |
-| A6 | 実験B 補足 | M-pol CVaR: $1.01\pm0.01$ ＞ $-1.15\pm1.94$ ＞ $-10.79\pm0.00$（最適値 1.0043） |
+| A6 | 実験B 補足 | M-pol CVaR: IQN $1.01\pm0.01$ ＞ 提案B1g $0.70\pm0.43$ ＞ B1 $-1.15\pm2.38$ ＞ B0 $-10.79\pm0.00$（閾値方策クラス内最良 $k^*=0$: $1.0000$） |
 | A7 | 参考文献 | FQF, IQN, Beyond CVaR, Tail-Safe, Graf & Luschgy, Rockafellar & Uryasev |
 
 ## 画像ファイル（実在4点のみ）
