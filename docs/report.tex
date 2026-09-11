@@ -204,7 +204,7 @@ IQN の特筆すべき性質は，行動選択時に $\tau$ のサンプリン�
 FQF \cite{yang2019fqf} は QR-DQN の固定quantile fraction $\tau_i=i/N$ を，状態 $s$ の関数として学習する．
 ネットワークは2つの部分からなる．
 \begin{itemize}
-  \item \textbf{Fraction Proposal Network（FPN）} $\omega_1$：状態特徴 $\psi(s)$ から $N$ 個の値を出力し，ソフトマックスで確率ベクトル $q\in\Delta^{N-1}$（$\Delta^{N-1}$ は各成分が非負で総和1のベクトルの集合）に変換したのち累積和をとって
+  \item \textbf{Fraction Proposal Network（FPN）} $\omega_1$：状態特徴 $\psi(s)$ から $N$ 個の値を出力し，ソフトマックスで確率ベクトル $p\in\Delta^{N-1}$（$\Delta^{N-1}$ は各成分が非負で総和1のベクトルの集合）に変換したのち累積和をとって
   $\tau_0=0<\tau_1<\dots<\tau_{N-1}<\tau_N=1$ を得る．
   \item \textbf{Quantile Value Network} $\omega_2$：IQN と同様にquantile fraction $\hat\tau_i$ を入力として分位点値 $\Finv_{\omega_2}(\hat\tau_i)$ を出力する．
 \end{itemize}
@@ -238,7 +238,7 @@ Yang ら \cite{yang2019fqf} は Proposition 1 で，これが
 \end{equation}
 と閉形式で書けることを示した．導出を確認しておく．
 $\Wone=\sum_{j=0}^{N-1}\ell_j(\Finv(\hat\tau_j))$ において $\tau_i$ に依存する項は区間 $i-1$ と区間 $i$ のみである．
-区間 $i-1$ の積分上限，区間 $i$ の積分下限としての依存から，Leibnizの積分則により
+$\tau_i$ は区間 $i-1$ の積分上限かつ区間 $i$ の積分下限として現れるため，Leibnizの積分則により
 \begin{equation}
   \left|\Finv(\tau_i)-\Finv(\hat\tau_{i-1})\right|-\left|\Finv(\tau_i)-\Finv(\hat\tau_i)\right|
   =\left(\Finv(\tau_i)-\Finv(\hat\tau_{i-1})\right)-\left(\Finv(\hat\tau_i)-\Finv(\tau_i)\right)
@@ -339,7 +339,7 @@ $Z$ の $g$ による歪み分布 $\dist Z$ を，確率変数 $\Finv(U_g)$ の�
 $\Prob(\Finv(U_g)\le z)=\Prob(U_g\le F(z))=g(F(z))$ であるから，$\dist Z$ の累積分布関数は $g\circ F_Z$ であり，
 適切な端点の取扱いの下で，その分位点関数はほとんど至る所
 $F^{-1}_{\dist Z}(v)=\Finv(g^{-1}(v))$ と表せる．
-$Z$ が密度 $f$ をもてば $\dist Z$ の密度は $g'(F(z))f(z)$ となり，「確率を $g'$ で再重み付けした分布」に他ならない．
+$Z$ が確率密度関数 $f$ をもつとき，$\dist Z$ の確率密度関数は $g'(F(z))f(z)$ となり，元の確率密度を重み $g'(F(z))$ で再重み付けした分布に他ならない．
 特に
 \begin{equation}
   \E[\dist Z]=\int_0^1\Finv(g^{-1}(v))\,dv=\int_0^1\Finv(\tau)\,g'(\tau)\,d\tau=\rho_g(Z)
