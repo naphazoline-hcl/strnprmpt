@@ -162,7 +162,7 @@ $z_1<\dots<z_N$ を固定し，各点の確率 $p_i(s,a)$ をソフトマック�
 
 \subsection{QR-DQN：分位点回帰による固定quantile fraction表現}
 QR-DQN \cite{dabney2018qrdqn} は原子の位置ではなく確率側を固定する．
-すなわち，各原子に均等な確率 $1/N$ を割り当て，ネットワークがその位置 $\theta_i(s,a)$ を出力することで，$Z(s,a)\approx\frac1N\sum_{i=1}^N\delta_{\theta_i(s,a)}$ と近似する．ここで $\delta_z$ は点 $z$ に確率質量1を置く離散分布（ディラック測度）である．
+すなわち，各原子に均等な確率 $1/N$ を割り当て，ネットワークがその位置 $\theta_i(s,a)$ を出力することで，$Z(s,a)\approx\frac1N\sum_{i=1}^N\delta_{\theta_i(s,a)}$ と近似する．ここで $\delta_\theta$ は点 $\theta$ に確率質量1を置く離散分布（ディラック測度）である．
 Dabney ら \cite{dabney2018qrdqn} は，等確率 $1/N$ の $N$ 点分布のうち $\Wone(Z,\hat Z)$ を最小化する離散分布の原子が，分位点中点 $\hat\tau_i=(2i-1)/(2N)$ における分位点値
 $\theta_i=\Finv(\hat\tau_i)$ で与えられることを示した．QR-DQN はこの原子位置を分位点回帰で学習する．
 分位点 $\tau$ に対する分位点回帰損失は，指示関数 $\mathbb{I}$ を用いて
