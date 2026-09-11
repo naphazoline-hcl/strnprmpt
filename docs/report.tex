@@ -5,6 +5,8 @@
 \usepackage{array}
 \usepackage{url}
 
+\usepackage[margin=25mm]{geometry}
+
 \theoremstyle{definition}
 \newtheorem{definition}{定義}[section]
 \newtheorem{proposition}{命題}[section]
@@ -21,7 +23,7 @@
 }{%
   \popQED\endtrivlist\@endpefalse
 }
-\renewcommand{\proofname}{証明．}
+\renewcommand{\proofname}{証明}
 \makeatother
 
 \newcommand{\CVaR}{\mathrm{CVaR}}
@@ -104,7 +106,7 @@ Moghimi and Ku \cite{moghimi2025beyond} は静的スペクトルリスク尺度�
 分布全体を一様に近似するよう定められている．
 $\CVaR_{0.05}$ を評価するために必要なのは分位点関数 $\Finv(\tau)$ の $\tau\in[0,0.05]$ における形状であるが，
 $N=16$ 個の一様quantile fraction $\tau_i=i/16$ のうちこの区間に入るものは1つもない．
-これが本研究の出発点である：\textbf{リターン分布の下側裾（損失側の裾）を正確に評価したいなら，
+これが本研究の出発点である。\textbf{リターン分布の下側裾（損失側の裾）を正確に評価したいなら，
 近似の「解像度」を下側裾に集中させるべきである}．
 
 \subsection{本研究の位置づけと貢献}
@@ -163,14 +165,14 @@ QR-DQN \cite{dabney2018qrdqn} は原子の位置ではなく確率側を固定�
 すなわち等確率 $1/N$ の $N$ 個の原子 $\theta_i(s,a)$ を出力し，$Z(s,a)\approx\frac1N\sum_i\delta_{\theta_i}$ と近似する．ここで $\delta_z$ は点 $z$ に確率質量1を置く離散分布（ディラック測度）である．
 Dabney ら \cite{dabney2018qrdqn} は，等確率 $1/N$ の $N$ 点分布のうち $\Wone(Z,\hat Z)$ を最小化するものの原子は，分位点中点 $\hat\tau_i=(2i-1)/(2N)$ における分位点値
 $\theta_i=\Finv(\hat\tau_i)$ であることを示した．QR-DQN はこの原子位置を分位点回帰で学習する．
-分位点 $\tau$ に対する分位点回帰損失は
+分位点 $\tau$ に対する分位点回帰損失は、指示関数 $\mathbb{I}$ を用いて
 \begin{equation}
-  \rho_\tau(u)=u\left(\tau-\mathbf{1}\{u<0\}\right),\qquad u=\text{（目標）}-\text{（予測）}
+  \rho_\tau(u)=u\left(\tau-\mathbb{I}\{u<0\}\right),\qquad u=\text{（目標）}-\text{（予測）}
 \end{equation}
 であり，その期待値の最小点が $\tau$-分位点になる．
-勾配の非有界性を避けるため，実装では Huber 損失 $\mathcal{L}_\kappa$ を組み合わせた
+誤差がゼロ付近での微分不可能性（滑らかでないこと）による学習の不安定性を避けるため，実装では Huber 損失 $\mathcal{L}_\kappa$ を組み合わせた
 \begin{equation}
-  \rho^\kappa_\tau(u)=\left|\tau-\mathbf{1}\{u<0\}\right|\frac{\mathcal{L}_\kappa(u)}{\kappa},\qquad
+  \rho^\kappa_\tau(u)=\left|\tau-\mathbb{I}\{u<0\}\right|\frac{\mathcal{L}_\kappa(u)}{\kappa},\qquad
   \mathcal{L}_\kappa(u)=\begin{cases}\tfrac12u^2 & |u|\le\kappa\\ \kappa(|u|-\tfrac12\kappa)& \text{それ以外}\end{cases}
   \label{eq:huber-quantile}
 \end{equation}
@@ -206,7 +208,7 @@ FQF \cite{yang2019fqf} は QR-DQN の固定quantile fraction $\tau_i=i/N$ を，
   $\tau_0=0<\tau_1<\dots<\tau_{N-1}<\tau_N=1$ を得る．
   \item \textbf{Quantile Value Network} $\omega_2$：IQN と同様にquantile fraction $\hat\tau_i$ を入力として分位点値 $\Finv_{\omega_2}(\hat\tau_i)$ を出力する．
 \end{itemize}
-ここで $\hat\tau_i=(\tau_i+\tau_{i+1})/2$ はセル $[\tau_i,\tau_{i+1}]$ の中点である．
+ここで $\hat\tau_i=(\tau_i+\tau_{i+1})/2$ は区間 $[\tau_i,\tau_{i+1}]$ の中点である．
 近似分布は原子 $\Finv(\hat\tau_i)$ と重み $\tau_{i+1}-\tau_i$ をもつ離散分布
 \begin{equation}
   \hat Z_N=\sum_{i=0}^{N-1}(\tau_{i+1}-\tau_i)\,\delta_{\Finv(\hat\tau_i)}
@@ -218,14 +220,14 @@ FQF \cite{yang2019fqf} は QR-DQN の固定quantile fraction $\tau_i=i/N$ を，
 \paragraph{補題1（一様重み $\Wone$ に対する最適原子）．}
 Yang ら \cite{yang2019fqf} の Lemma 1 は，任意の連続分位点関数 $\Finv$ に対し，
 quantile fraction $\tau_0<\dots<\tau_N$ を固定したとき，式\eqref{eq:w1}の一様重み $\Wone(Z,\hat Z_N)$ を最小化する原子の位置は
-各セルの中点 $\hat\tau_i=(\tau_i+\tau_{i+1})/2$ における分位点値 $\Finv(\hat\tau_i)$ であると述べる．
-これは次のように理解できる．セル $i$ の寄与
+各区間の中点 $\hat\tau_i=(\tau_i+\tau_{i+1})/2$ における分位点値 $\Finv(\hat\tau_i)$ であると述べる．
+これは次のように理解できる．区間 $i$ の寄与
 \begin{equation}
   \ell_i(q)=\int_{\tau_i}^{\tau_{i+1}}\left|\Finv(u)-q\right|du
 \end{equation}
 を原子 $q$ で微分すると，$\Finv$ の単調性より $\partial\ell_i/\partial q=\Prob(u\in[\tau_i,\tau_{i+1}]:\Finv(u)<q)-\Prob(\cdot\ge q)$ であり，
-これが零になるのは $q=\Finv(m)$，$m$ がセル上の一様測度の中央値，すなわち $m=\hat\tau_i$ のときである．
-第\ref{sec:proposed}節ではこの「セル上の測度の中央値」という見方が，歪み重みへの拡張の鍵となる．
+これが零になるのは $q=\Finv(m)$，$m$ が区間上の一様測度の中央値，すなわち $m=\hat\tau_i$ のときである．
+第\ref{sec:proposed}節ではこの「区間上の測度の中央値」という見方が，歪み重みへの拡張の鍵となる．
 
 \paragraph{quantile fractionに関する勾配の閉形式．}
 FPN は $\Wone(Z,\hat Z_N)$ の $\tau_i$（$i=1,\dots,N-1$）に関する勾配で学習される．
@@ -235,18 +237,18 @@ Yang ら \cite{yang2019fqf} は Proposition 1 で，これが
   \label{eq:fqf-grad}
 \end{equation}
 と閉形式で書けることを示した．導出を確認しておく．
-$\Wone=\sum_{j=0}^{N-1}\ell_j(\Finv(\hat\tau_j))$ において $\tau_i$ に依存する項はセル $i-1$ とセル $i$ のみである．
-セル $i-1$ の積分上限，セル $i$ の積分下限としての依存（Leibniz則）から
+$\Wone=\sum_{j=0}^{N-1}\ell_j(\Finv(\hat\tau_j))$ において $\tau_i$ に依存する項は区間 $i-1$ と区間 $i$ のみである．
+区間 $i-1$ の積分上限，区間 $i$ の積分下限としての依存（Leibniz則）から
 \begin{equation}
   \left|\Finv(\tau_i)-\Finv(\hat\tau_{i-1})\right|-\left|\Finv(\tau_i)-\Finv(\hat\tau_i)\right|
   =\left(\Finv(\tau_i)-\Finv(\hat\tau_{i-1})\right)-\left(\Finv(\hat\tau_i)-\Finv(\tau_i)\right)
 \end{equation}
 を得る．ここで $\hat\tau_{i-1}\le\tau_i\le\hat\tau_i$ と $\Finv$ の単調性を用いて絶対値を外した．
 一方，原子 $\Finv(\hat\tau_{i-1}),\Finv(\hat\tau_i)$ を通じた依存（$\partial\hat\tau_i/\partial\tau_i=1/2$）は，
-補題1により各セルの原子が $\ell_j$ の最小点であるから $\partial\ell_j/\partial q=0$ となり消える．
+補題1により各区間の原子が $\ell_j$ の最小点であるから $\partial\ell_j/\partial q=0$ となり消える．
 両者を合わせて式\eqref{eq:fqf-grad}が得られる．
 直感的には，$\Finv(\tau_i)$ が隣接する2つの原子の中点にあるとき勾配が零になる．
-すなわち一様重み $\Wone$ の停留点では「境界の分位点値＝隣接原子の中点」「原子＝セル中点の分位点値」という2条件が同時に成り立ち，
+すなわち一様重み $\Wone$ の停留点では「境界の分位点値＝隣接原子の中点」「原子＝区間中点の分位点値」という2条件が同時に成り立ち，
 これは1次元 $L^1$ 最適量子化（Lloyd の条件. $k$-means 法の更新規則と同型の固定点条件）そのものである \cite{graf2000quantization}．
 
 \subsection{系譜のまとめ}
@@ -369,7 +371,7 @@ $g$ を絶対連続な歪み関数とし，$Z,\hat Z$ は $\Finv,\Fhinv$ が測�
 
 \begin{remark}
 式\eqref{eq:bound}の右辺は一様重み $\Wone(Z,\hat Z)$ の被積分関数に重み $g'(\tau)$ を掛けたものである．
-CVaR の場合 $g'_\alpha=\alpha^{-1}\mathbf 1_{[0,\alpha)}$ であるから
+CVaR の場合 $g'_\alpha=\alpha^{-1}\mathbb{I}_{[0,\alpha)}$ であるから
 \begin{equation}
   \left|\CVaR_\alpha(Z)-\CVaR_\alpha(\hat Z)\right|\le\frac1\alpha\int_0^\alpha\left|\Finv(\tau)-\Fhinv(\tau)\right|d\tau
   \label{eq:bound-cvar}
@@ -410,13 +412,13 @@ $\Wone(Z,\hat Z_N)$ を，命題\ref{prop:bound}の右辺
 \subsection{最適quantile fraction＝歪み分布の1次元最適量子化}
 \begin{proposition}[$g$-中央値原子]
 \label{prop:gmedian}
-quantile fraction $\tau_0<\dots<\tau_N$ を固定する．セル $i$ の $L_g$ への寄与
+quantile fraction $\tau_0<\dots<\tau_N$ を固定する．区間 $i$ の $L_g$ への寄与
 $\ell^g_i(q)=\int_{\tau_i}^{\tau_{i+1}}|\Finv(u)-q|\,g'(u)\,du$ を最小化する原子は
 \begin{equation}
   q_i=\Finv(\hat\tau_i),\qquad \hat\tau_i=g^{-1}\!\left(\frac{g(\tau_i)+g(\tau_{i+1})}{2}\right)
   \label{eq:gmedian}
 \end{equation}
-で与えられる．すなわち $\hat\tau_i$ はセル上の測度 $g'(u)du$ の中央値（$g$-中央値）である．
+で与えられる．すなわち $\hat\tau_i$ は区間上の測度 $g'(u)du$ の中央値（$g$-中央値）である．
 \end{proposition}
 \begin{proof}
 $\Finv$ は非減少であるから，$q=\Finv(m)$，$m\in[\tau_i,\tau_{i+1}]$ と書ける．
@@ -431,10 +433,10 @@ $g$ が平坦な区間をもつ場合（$g_\alpha$ の $(\alpha,1]$ 部分）に
 $v=g(\tau)$ と変数変換すれば，$\hat Z_N$ の歪み分布 $\dist\hat Z_N$ は原子 $\Finv(g^{-1}(\hat v_i))$，重み $v_{i+1}-v_i$ の離散分布であり，
 $L_g=\Wone(\dist Z,\dist\hat Z_N)$ は「歪み分布 $\dist Z$ を $N$ 点の離散分布で $L^1$ の意味で最良近似する」問題の目的関数である．
 これは Graf and Luschgy \cite{graf2000quantization} の意味での確率分布の \textbf{1次元 $N$ 点最適量子化（$r=1$. $r$ は近似誤差の $L^r$ ノルムにおける次数）} にほかならない．
-1次元では最適量子化器のVoronoiセル（各原子に最も近い点の集合）は区間となるため，$\tau$ 空間でセルを区間 $[\tau_i,\tau_{i+1}]$ に制限する本研究のパラメータ化に一般性の損失はない．
+1次元では最適量子化器のVoronoi領域（各原子に最も近い点の集合）は区間となるため，分位点空間 $[0,1]$ の分割を区間 $[\tau_i,\tau_{i+1}]$ とする本研究のパラメータ化に一般性の損失はない．
 最適量子化理論からは次の事実が得られる．
 \begin{itemize}
-  \item 最適量子化器は「原子＝セルの中央値（$L^1$ の場合）」「境界＝隣接原子の中点」という Lloyd 型の固定点条件を満たす．
+  \item 最適量子化器は「原子＝各区間の中央値（$L^1$ の場合）」「境界＝隣接原子の中点」という Lloyd 型の固定点条件を満たす．
   \item $\dist Z$ に適切なモーメント条件および正則性条件（絶対連続性，有限の高次モーメント，密度の有界性など）が成り立つ場合，
   1次元の $N$ 点最適量子化誤差は $O(1/N)$ のオーダーをもつ（Zador 型定理）．
   有限1次モーメントのみから一般に $O(1/N)$ が従うとは限らないため，
@@ -463,10 +465,10 @@ $\Finv$ は連続かつ非減少であり，境界 $\tau_i$ および原子 $q_i
 \end{equation}
 \end{proposition}
 \begin{proof}
-$L_g=\sum_j\ell_j^g(q_j)$ において $\tau_i$ に依存するのはセル $i-1$ と $i$ である．
+$L_g=\sum_j\ell_j^g(q_j)$ において $\tau_i$ に依存するのは区間 $i-1$ と $i$ である．
 FQF の場合（第\ref{subsec:fqf}節）と同様に，(a) 積分区間の端点としての依存と (b) 原子 $q_{i-1},q_i$ を通じた依存に分ける．
 (b) は命題\ref{prop:gmedian}により $\partial\ell^g_j/\partial q_j=0$ であるから消える（包絡線定理：最適化後の目的関数をパラメータで微分するとき，最小点自身のパラメータ依存は寄与しない）．
-(a) は Leibniz 則により，セル $i-1$ の上端から $+|\Finv(\tau_i)-q_{i-1}|\,g'(\tau_i)$，セル $i$ の下端から $-|\Finv(\tau_i)-q_i|\,g'(\tau_i)$ を与える．
+(a) は Leibniz 則により，区間 $i-1$ の上端から $+|\Finv(\tau_i)-q_{i-1}|\,g'(\tau_i)$，区間 $i$ の下端から $-|\Finv(\tau_i)-q_i|\,g'(\tau_i)$ を与える．
 $\hat\tau_{i-1}\le\tau_i\le\hat\tau_i$ と $\Finv$ の単調性により絶対値を外すと
 \begin{equation*}
   g'(\tau_i)\left[\left(\Finv(\tau_i)-\Finv(\hat\tau_{i-1})\right)-\left(\Finv(\hat\tau_i)-\Finv(\tau_i)\right)\right]
@@ -476,7 +478,7 @@ $\hat\tau_{i-1}\le\tau_i\le\hat\tau_i$ と $\Finv$ の単調性により絶対�
 すなわち，\textbf{母集団目的における提案法の境界勾配は FQF のquantile fractionに関する勾配（式\eqref{eq:fqf-grad}）に $g'(\tau_i)$ を乗じたものに一致する}．
 実装では，真の分位点関数 $\Finv$ を分位点値ネットワークの出力 $\Finv_{\omega_2}$ で置き換え，
 その出力への勾配を停止したplug-in型のFPN更新として式\eqref{eq:dist-grad}を用いる（全体の手順は\ref{subsec:impl}節）．
-学習途中のネットワーク出力が各セル損失の厳密な最小点である保証はないため，
+学習途中のネットワーク出力が各区間の損失 $\ell_j^g$ の厳密な最小点である保証はないため，
 実装上の更新は母集団勾配の近似であり，この区別を明示しておく．
 また $\Finv$ や $g$ に平坦部がある場合には式\eqref{eq:dist-grad}は劣勾配として理解する．
 勾配が零となる条件「$\Finv(\tau_i)$ が隣接原子の中点」は FQF と同じであるが，
@@ -507,7 +509,7 @@ $\lambda$ は「分布全体をどの程度保持するか」を制御するパ�
 以上をまとめると，提案法（以下，歪み FQF と呼ぶ）の1更新は以下の手順で与えられる．
 \begin{enumerate}
   \item 状態特徴 $\psi(s)$ から FPN によりquantile fraction $\tau_0=0<\tau_1<\dots<\tau_N=1$ を得る（ソフトマックス＋累積和）．
-  \item 各セルの $g$-中央値 $\hat\tau_i=g_{\alpha,\lambda}^{-1}\!\left((g_{\alpha,\lambda}(\tau_i)+g_{\alpha,\lambda}(\tau_{i+1}))/2\right)$ を計算する．
+  \item 各区間の $g$-中央値 $\hat\tau_i=g_{\alpha,\lambda}^{-1}\!\left((g_{\alpha,\lambda}(\tau_i)+g_{\alpha,\lambda}(\tau_{i+1}))/2\right)$ を計算する．
   \item 分位点値ネットワークで $\Finv_{\omega_2}(\hat\tau_i;s,a)$ を出力し，目標分布との Huber 分位点回帰損失（式\eqref{eq:qr-loss}）で $\omega_2$ を更新する．
   \item 式\eqref{eq:dist-grad}の plug-in 型勾配（$\Finv$ を分位点値ネットワークの出力で置き換え，その出力への勾配を停止したもの）により $\partial L_g/\partial\tau_i$ を計算し，ソフトマックス・累積和のヤコビアンで連鎖して FPN の $\omega_1$ を更新する（分位点値ネットワークには勾配を流さない）．
   \item 行動選択は $a^*=\arg\max_a\rho_{g_\alpha}(\hat Z(s,a))$（式\eqref{eq:rho-discrete}，純粋 $g_\alpha$）で行う．
@@ -561,7 +563,7 @@ Rockafellar and Uryasev \cite{rockafellar2000cvar} & CVaR の変分表現と凸�
   D1：ガウス混合 $0.9\,\mathcal N(0,1)+0.1\,\mathcal N(-4,1)$，
   D2：負の対数正規 $Z=e^{\sigma^2/2}-\exp(\sigma\xi)$，$\xi\sim\mathcal N(0,1)$，$\sigma=1$（平均0），
   D3：Student-$t$（自由度 $\nu=3$）．
-  \item \textbf{参照真値}を高精度に計算する．部分期待値 $\mathrm{PE}(a,b)=\E[Z\,\mathbf 1\{a<Z\le b\}]$ の閉形式（ガウス成分・$t$分布・対数正規）と，分布関数の数値反転（許容誤差 $10^{-12}$ の数値求根）による分位点 $\Finv(\alpha)$ を用い，
+  \item \textbf{参照真値}を高精度に計算する．部分期待値 $\mathrm{PE}(a,b)=\E[Z\,\mathbb{I}\{a<Z\le b\}]$ の閉形式（ガウス成分・$t$分布・対数正規）と，分布関数の数値反転（許容誤差 $10^{-12}$ の数値求根）による分位点 $\Finv(\alpha)$ を用い，
   $\CVaR_\alpha(Z)=\alpha^{-1}\mathrm{PE}(-\infty,\Finv(\alpha))$ とする（ガウス混合の $\Finv$ 自身は単純な閉形式をもたない）．$10^7$ サンプルのモンテカルロ（seed 0）で $|\text{参照値}-\text{MC}|<3\,\mathrm{SE}$（SE は MC 推定量の標準誤差）をクロスチェックする．
   \item \textbf{格子}を $N\in\{8,16,32,64\}$（任意で $128,256$），$\alpha\in\{0.01,0.05,0.1\}$ とする．
   \item \textbf{比較手法}として以下を実装する．
@@ -570,8 +572,8 @@ Rockafellar and Uryasev \cite{rockafellar2000cvar} & CVaR の変分表現と凸�
   M2：歪み最適配置（提案）．$\tau=\mathrm{cumsum}(\mathrm{softmax}(\theta))$（$\theta$ は最適化変数であるソフトマックス前の実数ベクトルで，QR-DQN の原子 $\theta_i$ とは別物）とパラメータ化し，
   式\eqref{eq:dist-grad}の解析勾配をソフトマックスのヤコビアンで連鎖して L-BFGS-B（制約付き準ニュートン法ソルバ，maxiter 500，gtol $10^{-10}$）で $L_g$ を最小化する．
   初期値は M1 由来の $\theta$ と Dirichlet 摂動（非負で総和1に正規化した乱数ベクトル）4つの計5スタートとし，$L_g$ 最小の解を採用する．
-  M3：Lloyd 型固定点（原子 $\leftarrow$ セルの $g$-中央値，境界 $\leftarrow$ 隣接原子の中点，200反復）を M2 のクロスチェックに用いる．
-  \item \textbf{目的関数}は台形則を使わず厳密に評価する．CVaR 歪みでは $g'$ が区分定数なので $\alpha$ を跨ぐセルを $\alpha$ で分割し，各区間の積分を部分期待値で閉形式計算する．
+  M3：Lloyd 型固定点（原子 $\leftarrow$ 区間の $g$-中央値，境界 $\leftarrow$ 隣接原子の中点，200反復）を M2 のクロスチェックに用いる．
+  \item \textbf{目的関数}は台形則を使わず厳密に評価する．CVaR 歪みでは $g'$ が区分定数なので $\alpha$ を跨ぐ区間 $[\tau_i,\tau_{i+1}]$ を $\alpha$ で分割し，各小区間の積分を部分期待値で閉形式計算する．
   最適化には正則化歪み $g_{\alpha,\lambda}$（$\lambda=0.05$）を用いる．
   \item \textbf{評価}は純粋な $g_\alpha$ で行う．誤差 $e=|\CVaR_\alpha(\hat Z_N)-\CVaR_\alpha(Z)|$，改善比 $R=e_{\mathrm{M0}}/e_{\mathrm{M2}}$，$[0,\alpha]$ 内のquantile fraction数を記録する．
   \item \textbf{点数換算値（N-equivalence）}：M2 の $N$ 点と同等以下の誤差を一様配置が達成するのに必要な最小点数 $N'$ を2のべきで探索後，二分法で求める．
@@ -597,6 +599,8 @@ D1 で $R=97.9$ に達するのは，混合成分 $\mathcal N(-4,1)$ による�
 一様配置ではこの構造がほぼ捉えられないためである．
 対照 M1 に対しても提案法はすべての設定で上回り（$e_{\mathrm{M2}}/e_{\mathrm{M1}}=0.05$〜$0.17$，成功基準 $\le0.7$ を充足），
 quantile fractionの最適化が裾への事前配置を超える効果をもつことを示した．
+なお，Lloyd 型固定点 M3 によるクロスチェックでは，全 54 設定（3分布$\times$3水準$\times$6格子）のうち 46 設定で M2 の目的関数値 $L_g$ が M3 以下であり，
+残る 8 設定でも相対差は最大約 22\% にとどまった．
 なお，参照真値は $10^7$ サンプルのモンテカルロ（seed 0）との照合により，3分布$\times$3水準の全 9 構成で
 $|\text{参照値}-\text{MC}|<3\,\mathrm{SE}$ を満たすことを確認した（最大 $|z|=1.69$. $z=(\text{参照値}-\text{MC})/\mathrm{SE}$ は標準化偏差）．
 
@@ -621,7 +625,7 @@ D3 Student-$t$（自由度3） & $0.974$ & $0.148$ & $0.0246$ & 39.6 & PASS & 13
 仮説 H1 の対象領域 $\alpha N\ge2$（$\alpha\in\{0.05,0.1\}\times N\in\{32,64\}$）における最小の改善比は $R=42.3$ であり，
 成功基準 $R\ge5$ を満たした．
 $N\ge16$ における log-log 傾きは約 $-1.8$ で，最適量子化理論の上界 $O(1/N)$ より速い減衰を示した．
-これは，CVaR 誤差が $\Finv-\Fhinv$ の符号付き平均（式\eqref{eq:cvar}）であるためセル内の正負の誤差が相殺されるのに対し，
+これは，CVaR 誤差が $\Finv-\Fhinv$ の符号付き平均（式\eqref{eq:cvar}）であるため区間内の正負の誤差が相殺されるのに対し，
 命題\ref{prop:bound}の上界は絶対値の積分であって相殺を考慮しないことによる．
 すなわち観測された速い減衰はバウンドの緩さを示しており，理論の精密化の余地がある（第\ref{sec:future}節）．
 
@@ -694,7 +698,7 @@ $k^*=1$ が最良となり，そのクラス内での CVaR 最適値 $1.0043$ �
   (ii) \textbf{M-pol}：5{,}000 評価エピソード（$\varepsilon=0$）の収益の経験 $\CVaR_{0.05}$，
   (iii) \textbf{quantile fraction診断}：100k ステップ時点で全評価状態にわたる学習済み $\tau$ の $[0,\alpha]$ 内のquantile fraction数．
   \item \textbf{B2 の CVaR 推定方法}：B0・B1 は 16 個の重み付き原子から式\eqref{eq:rho-discrete}により CVaR を算出する．
-  一方 B2（IQN）は固定原子分布をもたないため，評価には $\tau$ を $(0,\alpha)$ 内の等間隔16点 $\tau_j=\alpha(2j-1)/(2N)$（セル中央）に固定した決定的グリッドを用い，
+  一方 B2（IQN）は固定原子分布をもたないため，評価には $\tau$ を $(0,\alpha)$ 内の等間隔16点 $\tau_j=\alpha(2j-1)/(2N)$（各区間の中点）に固定した決定的グリッドを用い，
   出力分位点値の平均を CVaR 推定値とする（行動選択時の $\tau\sim U(0,\alpha)$ とは異なり，評価は決定的に行う）．
 \end{enumerate}
 
@@ -711,7 +715,7 @@ $k^*=1$ が最良となり，そのクラス内での CVaR 最適値 $1.0043$ �
 一方，B2 IQN は $0.36\pm0.04$（限定 $0.15\pm0.02$）と最も小さい誤差を示した．
 B1 の下側裾quantile fraction数は状態あたり $0.48\pm0.38$ 個（B0 は 0）であり，提案法が実際にquantile fractionを下側裾へ移動させていることを示す．
 裾への集中をより直接に確認するため，内部境界 $\tau_i$ の個数に加え，代表点 $\hat\tau_i$ のうち $[0,\alpha]$ に入る個数，
-最小の $\hat\tau_i$，および $[0,\alpha]$ を覆うセルに割り当てられた総確率質量の報告も有効と考えられ，今後の診断項目とする（第\ref{sec:future}節）．
+最小の $\hat\tau_i$，および $[0,\alpha]$ 内の区間に割り当てられた総確率質量の報告も有効と考えられ，今後の診断項目とする（第\ref{sec:future}節）．
 
 \begin{table}[htbp]
 \centering
@@ -785,7 +789,7 @@ B0 全シードと B1 seed 0 でみられる RISKY 偏重の傾向は，前述�
   および Moghimi and Ku \cite{moghimi2025beyond} の静的スペクトルリスク尺度最適化との比較を行う．
   実験Bはシード数を 10 以上に拡張して統計的な優位性（bootstrap 信頼区間，paired comparison を含む）を確認するとともに，
   実験Bの参照 CVaR について独立な複数評価バッチから標準誤差を求め，必要に応じてロールアウト数を増やす．
-  また裾への集中をより直接示す診断（代表点 $\hat\tau_i$ の $[0,\alpha]$ 内個数，最小 $\hat\tau_i$，$[0,\alpha]$ を覆うセルの総確率質量）を追加する．
+  また裾への集中をより直接示す診断（代表点 $\hat\tau_i$ の $[0,\alpha]$ 内個数，最小 $\hat\tau_i$，$[0,\alpha]$ 内の区間の総確率質量）を追加する．
   FPN の初期化敏感性への対策（$g$-一様配置初期化，エントロピー正則化）と $\lambda$ の感度分析も実施する．
   \item \textbf{時間整合性}：静的 CVaR 目的に対して時間整合な方策クラス（Lim and Malik \cite{lim2022distributional}）との組合せを検討し，
   推定精度の改善を方策性能の改善に接続する．
