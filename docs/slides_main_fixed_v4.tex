@@ -161,7 +161,7 @@
   \end{columns}
   \begin{alertblock}{課題：一様重みによる解像度配分}
     固定一様配置では下側裾 $[0,\alpha]$ に置かれる
-    quantile fraction は期待値として\alert{約 $\alpha N$ 個}（$\alpha=0.05,\ N=16$ で約 $0.8$ 個，
+    quantile fraction は\alert{およそ $\alpha N$ 個}（$\alpha=0.05,\ N=16$ で約 $0.8$ 個，
     実際には内部境界は\alert{$0$ 個}）．
     FQF は配置を学習するが，目的が一様重みのため\alert{裾への集中を直接には促さない}．
   \end{alertblock}
@@ -322,7 +322,7 @@
           \midrule
           FQF（B0） & $7.02\pm0.14$ & $1.88\pm0.14$ \\
           \textbf{提案 B1g} & $\mathbf{0.96\pm0.51}$ & $\mathbf{0.59\pm0.10}$ \\
-          IQN（B2） & $\mathbf{0.36\pm0.05}$ & $\mathbf{0.35\pm0.05}$ \\
+          IQN（B2） & $0.36\pm0.05$ & $0.35\pm0.05$ \\
           \bottomrule
         \end{tabular}
         \begin{itemize}
@@ -332,7 +332,7 @@
         \end{itemize}
       \end{exampleblock}
       \begin{alertblock}{留意点}
-        \scriptsize M-est 参照値は各手法の greedy 方策下の分布のもの．共通参照下でも\alert{継続方策の不一致}が残る（厳密な分離は\blue{方策評価モード}で今後実施）．B2p（学習時歪み$\tau$，MAE $3.42$）は sampling 系一般の劣位を示さない．
+        \scriptsize M-est 参照値は各手法の greedy 方策下の分布のもの．共通参照下でも\alert{継続方策の不一致}が残る（厳密な分離は\blue{方策評価モード}で今後実施）．B2p（学習時歪み$\tau$，MAE $3.42$）の結果は sampling 系一般の劣位を示すものではない．
       \end{alertblock}
     \end{column}
   \end{columns}
