@@ -1,14 +1,12 @@
 % ============================================================
-% slides_concise.tex  --  卒業研究 中間発表スライド（簡潔版）
+% slides_main_fixed_v4.tex  --  卒業研究 中間発表スライド（本番投影用）
 % 歪み関数重み付き1-Wasserstein距離に基づくquantile fraction学習と
 % CVaR推定誤差の低減
 % ------------------------------------------------------------
 % 本番投影用の正式版．本編10枚のみで，QA/Appendix（A1〜A7）は含まない．
 % 文章は slides_script.md の口頭説明で補う前提で削っている．
 % 質疑応答は slides_qa.md ＋ 予備版 slides_concise.pdf（Appendix収録）を使用．
-% コンパイル: lualatex slides_concise.tex（2回実行）
-% 図: fig1_fqf_overview.png, fig3_placement.png, fig4_error.png,
-%     fig5_curve.png を同階層に配置（slides.tex と共有）
+% コンパイル: lualatex slides_main_fixed_v4.tex（2回実行）
 % ============================================================
 \RequirePackage{iftex}
 \ifdefined\directlua
@@ -48,7 +46,7 @@
 \usepackage{graphicx}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, positioning, calc, shapes, patterns}
-\graphicspath{{./}{./figures/}}
+\graphicspath{{./}{./figures/}{../Risk-Sensitive-FQF/中間レポート/_figgen/outB/}}
 
 % ---------- カラーマクロ ----------
 \newcommand{\red}[1]{\textcolor{red}{#1}}
@@ -56,7 +54,6 @@
 \newcommand{\blue}[1]{\textcolor{blue!80!black}{#1}}
 
 % ---------- 記号定義 ----------
-% \Finv は一部パッケージで既に定義されているため上書きする
 \providecommand{\Finv}{}\renewcommand{\Finv}{F^{-1}}
 \providecommand{\Fhinv}{}\renewcommand{\Fhinv}{\hat{F}^{-1}}
 \DeclareMathOperator{\CVaR}{CVaR}
@@ -67,6 +64,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\ind}{\mathbb{1}}
 \newcommand{\Lg}{L_g}
+\newcommand{\dist}{\mathcal{D}_g}
 
 % ---------- タイトル情報 ----------
 \title[歪み重み付き$W_1$によるquantile fraction学習]{歪み関数重み付き1-Wasserstein距離に基づく\texorpdfstring{\\}{ }quantile fraction学習とCVaR推定誤差の低減}
@@ -162,8 +160,10 @@
     \end{column}
   \end{columns}
   \begin{alertblock}{課題：一様重みによる解像度配分}
-    $W_1$ は $[0,1]$ 上で一様に誤差を評価するため，下側裾 $[0,\alpha]$ に置かれる
-    quantile fraction は\alert{約 $\alpha N$ 個}（$\alpha=0.05,\ N=16$ で\alert{約 $0.8$ 個}）．
+    固定一様配置では下側裾 $[0,\alpha]$ に置かれる
+    quantile fraction は\alert{およそ $\alpha N$ 個}（$\alpha=0.05,\ N=16$ で約 $0.8$ 個，
+    実際には内部境界は\alert{$0$ 個}）．
+    FQF は配置を学習するが，目的が一様重みのため\alert{裾への集中を直接には促さない}．
   \end{alertblock}
 \end{frame}
 
@@ -174,15 +174,15 @@
   \begin{exampleblock}{命題（CVaR推定誤差の上界）}
     \[
       \bigl|\CVaR_\alpha(Z)-\CVaR_\alpha(\hat Z)\bigr|
-      \le W_1\bigl(g_\# Z,\, g_\# \hat Z\bigr)
+      \le W_1\bigl(\dist Z,\, \dist \hat Z\bigr)
       = \int_0^1 g'(\tau)\,\bigl|\Finv(\tau)-\Fhinv(\tau)\bigr|\,d\tau =: \Lg.
     \]
   \end{exampleblock}
   \begin{columns}[T]
     \begin{column}{0.5\linewidth}
       \begin{block}{導かれる設計指針}
-        FQF の目的関数を $W_1\to\Lg$ に置換すれば，
-        \blue{CVaR推定誤差の上界そのもの}を最小化する．
+        FQF の目的関数を $W_1\to\Lg$ に置換すれば，母集団設定では
+        \blue{CVaR推定誤差の上界}を最小化する（実装は plug-in 擬似勾配を最適化）．
       \end{block}
     \end{column}
     \begin{column}{0.48\linewidth}
@@ -207,10 +207,10 @@
 \end{frame}
 
 % ============================================================
-% 本編 6: 提案定理（口頭: slides_script.md §6）
+% 本編 6: 提案手法の核心（口頭: slides_script.md §6）
 % ============================================================
-\begin{frame}{提案定理：quantile fraction に関する勾配の閉形式}
-  \begin{exampleblock}{定理（歪み重み付き目的関数の境界勾配）}
+\begin{frame}{提案手法の核心：quantile fraction に関する勾配}
+  \begin{exampleblock}{命題（母集団設定での歪み重み付き目的関数の境界勾配）}
     各区間の原子を \textbf{$g$-中央値} $\hat\tau_i$，すなわち
     $g(\hat\tau_i)=\tfrac12\{g(\tau_i)+g(\tau_{i+1})\}$ にとると
     \[
@@ -222,8 +222,10 @@
   \begin{block}{数理的・実装的な含意}
     \begin{itemize}
       \item FQF の勾配に\alert{$g'(\tau_i)$ を乗じるのみ}．ネットワーク構造の変更は不要．
-      \item 裾内 $g'(\tau_i)=1/\alpha$（$\alpha=0.05$ で $20$ 倍），裾外 $0$
-            $\Rightarrow$ 表現力が\blue{下側裾に自然に配分}される．
+            実装はネットワーク出力で $\Finv$ を置換した \blue{plug-in 擬似勾配（stop-gradient）}．
+      \item 裾内 $g'(\tau_i)\approx(1-\lambda)/\alpha+\lambda$（$\alpha=0.05,\lambda=0.05$ で約 $19$ 倍），
+            裾外 $\lambda$ $\Rightarrow$ 表現力が\blue{下側裾に集中して配分}される
+            （最適化には正則化 $g_{\alpha,\lambda}$ を使用）．
     \end{itemize}
   \end{block}
 \end{frame}
@@ -235,7 +237,7 @@
   \begin{block}{リスク感応的な分布型強化学習の主な設計軸}
     \centering
     \scriptsize
-    \setlength{\tabcolsep}{4pt}
+    \setlength{\tabcolsep}{3pt}
     \begin{tabular}{@{}llll@{}}
       \toprule
       手法 & 主な変更点 & quantile fraction & CVaR誤差上界 \\
@@ -244,6 +246,7 @@
       Beyond CVaR (Moghimi \& Ku, 2025) & 値側（原子の重み付け） & 固定 & 値の重み付けのみ \\
       Tail-Safe (Zhang, 2025) & 安全制約側 & 固定 & 対応しない \\
       FQF (Yang+, 2019) & 損失側（一様重み $W_1$） & \green{学習} & 一様 $W_1$ を最小化 \\
+      FQF-SRM (Gan+, 2026) & 評価時歪み（FPN損失は一様） & \green{学習} & 一様 $W_1$ を最小化 \\
       \textbf{本研究} & \alert{損失側（歪み重み $\Lg$）} & \green{学習} & \alert{$\Lg$ を直接最小化} \\
       \bottomrule
     \end{tabular}
@@ -284,11 +287,14 @@
           D3 & $0.974$ & $0.0246$ & $\mathbf{39.6}$ \\
           \bottomrule
         \end{tabular}
+        \scriptsize
         \begin{itemize}
-          \item 判定基準 $R\ge 2$：全分布で \green{PASS}
+          \item $\alpha N\ge 2$ 最小改善比 \alert{$R=42.3$}（全分布 PASS）
           \item 下側裾集中：\alert{$13/15$}（一様は $0$）
-          \item 歪み最適 $16$ 点 $\approx$ 一様 \alert{$695$ 点}
+          \item 歪み最適 $16$ 点 $\approx$ 一様 \alert{$695$ 点}（D1・$\alpha=0.05$）
+          \item 経験的傾き：M2 \alert{$-1.8$}（二次減衰），M0 $\alert{-0.72}$〜$-1.27$（一次減衰）
         \end{itemize}
+        \par\vspace{1pt}{\scriptsize ※$N=16$・$\alpha=0.05$ は一様配置が単一分位点のみで CVaR を推定する特殊設定．}
       \end{exampleblock}
     \end{column}
   \end{columns}
@@ -301,31 +307,32 @@
   \begin{columns}[onlytextwidth, T]
     \begin{column}{0.38\linewidth}
       \centering
-      \includegraphics[width=\linewidth]{fig5_curve.png}\\
-      {\footnotesize CVaR 推定 MAE（M-est）の学習曲線}\\[2pt]
-      {\footnotesize B0：FQF，B1：歪みFQF（提案），B2：IQN}
+      \includegraphics[width=\linewidth]{figB2_estimation_ja.png}\\
+      {\scriptsize CVaR 推定 MAE（M-est）の学習曲線}\\[1pt]
+      {\tiny B0:FQF, B1/B1g:歪みFQF, B2/B2p:IQN}
     \end{column}
-    \begin{column}{0.59\linewidth}
-      \begin{exampleblock}{主結果（CVaR 推定 MAE：M-est，mean $\pm$ SD）}
+    \begin{column}{0.60\linewidth}
+      \begin{exampleblock}{主結果（CVaR 推定 MAE：M-est，mean $\pm$ 標本SD, ddof=1）}
         \footnotesize
         \centering
-        \begin{tabular}{@{}lccc@{}}
+        \setlength{\tabcolsep}{5pt}
+        \begin{tabular}{@{}lcc@{}}
           \toprule
-          指標 & B0 FQF & B1 歪みFQF & B2 IQN \\
+          手法 & 方策依存 M-est & all-SAFE 共通参照 \\
           \midrule
-          MAE（全110対） & $7.02\pm0.11$ & $\mathbf{1.41\pm0.75}$ & $0.36\pm0.04$ \\
-          MAE（意思決定状態） & $14.41$ & $\mathbf{3.24}$ & $0.15$ \\
-          下側裾 q.f.\ 数 & $0$ & $\mathbf{0.48\pm0.38}$ & --- \\
+          FQF（B0） & $7.02\pm0.14$ & $1.88\pm0.14$ \\
+          \textbf{提案 B1g} & $\mathbf{0.96\pm0.51}$ & $\mathbf{0.59\pm0.10}$ \\
+          IQN（B2） & $0.36\pm0.05$ & $0.35\pm0.05$ \\
           \bottomrule
         \end{tabular}
         \begin{itemize}
-          \item FQF 比で MAE を\alert{約 $1/5$}（$7.02\to1.41$）に低減
-          \item エージェント内部でも下側裾集中（$0\to0.48$ 個／状態）
+          \item FQF 比\alert{約 $1/7$}（$7.02\to0.96$），下側裾に\alert{$14.06$個}配置
+          \item B3g 固定配置（FPN凍結・理論配置）でも\alert{$0.74$} $\to$ toy での主因は\blue{理論配置の採用}
+          \item IQN（B2）が最良誤差，一般的優位性は未確認
         \end{itemize}
       \end{exampleblock}
       \begin{alertblock}{留意点}
-        IQN（B2）は MAE で優位．FPN の局所解・初期化バイアスが要因と考えられ，
-        \alert{初期化改善を今後の課題}とする．
+        \scriptsize M-est 参照値は各手法の greedy 方策下の分布のもの．共通参照下でも\alert{継続方策の不一致}が残る（厳密な分離は\blue{方策評価モード}で今後実施）．B2p（学習時歪み$\tau$，MAE $3.42$）の結果は sampling 系一般の劣位を示すものではない．
       \end{alertblock}
     \end{column}
   \end{columns}
@@ -337,19 +344,40 @@
 \begin{frame}{まとめと今後の展望}
   \begin{exampleblock}{達成事項}
     \begin{itemize}
-      \item \textbf{理論}：CVaR推定誤差の上界 $\Lg$ と，quantile fraction に関する勾配の閉形式を導出
-      \item \textbf{実験A}：改善比 $R=39.6\sim97.9$（全分布 PASS），$16$ 点 $\approx$ 一様 $695$ 点
-      \item \textbf{実験B}：CVaR推定 MAE を FQF 比\alert{約 $1/5$} に低減，下側裾集中を確認
+      \item \textbf{理論}：CVaR推定誤差の上界 $\Lg$ と，母集団設定の境界勾配（$g'(\tau_i)$ 倍）を導出し plug-in 実装
+      \item \textbf{実験A}：$\alpha N\ge 2$ 最小改善比 \alert{$R=42.3$}（全分布 PASS），$16$ 点 $\approx$ 一様 $695$ 点（D1）
+      \item \textbf{実験B}：CVaR推定 MAE を FQF 比\alert{約 $1/7$} に低減，初期化改善（B1g）で理論配置達成
+      \item \textbf{位置づけの明示}：IQN（B2）最良（$0.36$）・B3g も同程度（$0.74$）$\to$ 一般的優位性は未確認
     \end{itemize}
   \end{exampleblock}
   \begin{block}{卒業研究の完成に向けた計画}
     \begin{itemize}
-      \item \blue{金融デルタヘッジ環境}への適用：損益分布の下側裾を対象とした実環境評価
-      \item \blue{理論の厳密化}：一般の歪み $g$（非線形歪み）への拡張，有限サンプル設定 A-fs での誤差評価
-      \item \blue{最適化の安定化}：FPN の初期化改善による局所解・初期化バイアスの軽減
+      \item \blue{金融デルタヘッジ環境（実験C）}：日次リヘッジ＋取引コスト，ジャンプ拡散・確率的ボラティリティ拡張，IQN との定量比較
+      \item \blue{理論の定理化}：収束レートの厳密化，有限サンプル誤差評価
+      \item \blue{実験Bの拡充}：シード $10$ 以上・bootstrap 信頼区間，\blue{方策評価モード}による交絡分離，B2p 公平変種，$\alpha$ 変更時の再利用性比較
+      \item \blue{時間整合性}：時間整合な CVaR 方策クラスとの組合せ
     \end{itemize}
   \end{block}
 \end{frame}
 
+% ============================================================
+% 参考文献
+% ============================================================
+\section{参考文献}
+\begin{frame}{参考文献}
+  \footnotesize
+  \begin{enumerate}
+    \setlength{\itemsep}{1.5pt}
+    \item D. Yang, L. Zhao, Z. Lin, T. Qin, J. Bian, T.-Y. Liu.
+          Fully Parameterized Quantile Function for Distributional Reinforcement Learning. \textit{NeurIPS}, 2019.
+    \item W. Dabney, G. Ostrovski, D. Silver, R. Munos.
+          Implicit Quantile Networks for Distributional Reinforcement Learning. \textit{ICML}, 2018.
+    \item M. Moghimi, H. Ku. Beyond CVaR: Leveraging Static Spectral Risk Measures for Enhanced Decision-Making in Distributional Reinforcement Learning. \textit{ICML}, 2025.
+    \item J. Zhang. Tail-Safe Hedging. \textit{arXiv:2510.04555}, 2025.
+    \item S. Graf, H. Luschgy. \textit{Foundations of Quantization for Probability Distributions}. Lecture Notes in Mathematics 1730, Springer, 2000.
+    \item R. T. Rockafellar, S. Uryasev. Optimization of Conditional Value-at-Risk. \textit{Journal of Risk}, 2(3), 21--41, 2000.
+    \item A. Pichler. Evaluations of Risk Measures for Different Probability Measures. \textit{SIAM Journal on Optimization}, 23(1), 530--551, 2013.
+  \end{enumerate}
+\end{frame}
 
 \end{document}
