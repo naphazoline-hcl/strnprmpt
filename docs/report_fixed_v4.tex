@@ -101,7 +101,7 @@ FQF（B0）の約7分の1（$7.02\to0.96$）に減少し，下側裾への配置
 強化学習における価値関数 $Q^\pi(s,a)=\E[Z^\pi(s,a)]$ は，収益 $Z^\pi(s,a)=\sum_t\gamma^t R_t$ の期待値のみを扱う．
 しかし，金融リスク管理をはじめ多くの意思決定問題では，収益の「平均」よりも「稀に発生する大きな損失」を正確に把握することが重要である．
 たとえばオプションを売却した投資家は，原資産を売買してデルタヘッジを行うが，離散的なリヘッジと取引コストのもとでは
-ヘッジ損益の分布は非対称で，厚い下側裾をもつ裾の重い分布（ヘビーテイル分布：裾が正規分布より重く，稀だが巨大な損失が無視できない確率で発生する型の分布）となる．
+ヘッジ損益の分布は非対称で，下側に厚い裾をもつ（裾が正規分布より重く，稀だが巨大な損失が無視できない確率で発生する型の分布，あるいは損失クラスタを伴う歪んだ分布となる）．
 このとき投資家が重視すべきは分散ではなく，最悪側の累積確率 $\alpha$ における平均損失である．本報告では以下，損益 $Z$ を基準としてこの量を「下側 CVaR$_\alpha$ の\textbf{最大化}」という規約で扱う（第\ref{sec:drm}節の符号規約を参照）\cite{rockafellar2000cvar}．
 
 分布型強化学習 \cite{bellemare2017c51,dabney2018qrdqn,dabney2018iqn,yang2019fqf} は収益分布 $Z^\pi$ 全体を学習するため，
@@ -111,7 +111,7 @@ Moghimi and Ku \cite{moghimi2025beyond} は静的スペクトルリスク尺度�
 しかし，これらの手法において「分布をどの点で近似するか」は，リスク尺度とは無関係に，
 分布全体を一様に近似するよう定められている．
 $\CVaR_{0.05}$ を評価するために必要なのは分位点関数 $\Finv(\tau)$ の $\tau\in[0,0.05]$ における形状であるが，
-$N=16$ 個の一様quantile fractionのうち，内部の $\tau_i=i/16$（$i=1,\dots,N-1$）でこの区間に入るものは1つもない．
+$N=16$ 個の一様quantile fractionのうち，内部境界 $\tau_i=i/16$（$i=1,\dots,N-1$）でこの区間に入るものは1つもなく，CVaR 領域 $[0, 0.05]$ は実質的に第1区間の中点原子 $\hat\tau_0=1/32=0.03125$ の1点のみで代表される．
 これが本研究の出発点である．\textbf{収益分布の下側裾（損失側の裾）を正確に評価したいなら，
 近似の「解像度」を下側裾に集中させるべきである}．
 
@@ -143,7 +143,7 @@ quantile fractionを一様重み $\Wone$ の最小化により決めている．
   (\mathcal{T}^\pi Z)(s,a)\overset{D}{=}R(s,a)+\gamma Z(S',A'),\qquad S'\sim P(\cdot|s,a),\ A'\sim\pi(\cdot|S')
 \end{equation}
 を導入し（$\overset{D}{=}$ は分布として等しいことを表す），これが最大形式の $p$-Wasserstein 距離 $\bar d_p(Z_1,Z_2)=\sup_{s,a}W_p(Z_1(s,a),Z_2(s,a))$（$\sup$ は全状態・行動対に対する上限）に関して
-$\gamma$-縮小写像であることを示した．
+$\gamma$-縮小写像であることを示した（なおこの縮小性は $\gamma<1$ の無限ホライズン設定で成立する理論であり，第\ref{sec:exp}節の実験Bで扱う $\gamma=1$ の有限ホライズン設定とは問題構造が異なる点に留意されたい）．
 ここで1次元分布 $Z_1,Z_2$ の間の $p$-Wasserstein距離は分位点関数（累積分布関数の一般化逆関数）$F^{-1}_{Z}(\tau)=\inf\{z:F_Z(z)\ge\tau\}$ を用いて
 \begin{equation}
   W_p(Z_1,Z_2)=\left(\int_0^1\left|F_{Z_1}^{-1}(\tau)-F_{Z_2}^{-1}(\tau)\right|^p d\tau\right)^{1/p}
@@ -320,7 +320,7 @@ Rockafellar and Uryasev \cite{rockafellar2000cvar} は
 \begin{equation}
   \CVaR_\alpha(Z)=\max_{\eta\in\R}\left\{\eta-\frac1\alpha\E\left[(\eta-Z)^+\right]\right\}
 \end{equation}
-という変分表現を与え，CVaR最適化が凸計画に帰着することを示した（損失を正で扱う原論文と符号規約が逆である点に注意する）．ここで $\eta$ は閾値を表す補助変数であり，この最大問題の最適解は $\Finv(\alpha)$ となる．また $(\eta-Z)^+=\max(\eta-Z,0)$ は正位部分を表す．
+という変分表現を与え，CVaR最適化が凸計画に帰着することを示した（損失を正で扱う原論文と符号規約が逆である点に注意する）．ここで $\eta$ は閾値を表す補助変数であり，$\Finv(\alpha)$ はこの最大問題の最適解の一つである．連続分布では最適解は $\Finv(\alpha)$ として一意に定まるが，点質量を含む一般の分布では $F(\eta^-)\le\alpha\le F(\eta)$ を満たす $\eta$ 全体が最適解の閉区間をなし，一般化逆関数 $\Finv(\alpha)$ はその代表解を与える．また $(\eta-Z)^+=\max(\eta-Z,0)$ は正位部分を表す．
 式\eqref{eq:cvar}は歪み関数
 \begin{equation}
   g_\alpha(\tau)=\min\left(\tau/\alpha,\,1\right),\qquad
@@ -399,9 +399,23 @@ CVaR の場合 $g'_\alpha=\alpha^{-1}\mathbb{I}_{[0,\alpha)}$ であるから
   \label{eq:rho-discrete}
 \end{equation}
 と閉形式で計算できる．$\hat Z_N$ の分位点関数が階段関数であることから直ちに従う．
-本研究では最適化時に後述の正則化歪み関数 $g_{\alpha,\lambda}$ を用いるが，
-評価では常に式\eqref{eq:rho-discrete}に正則化を含まないCVaR歪み関数 $g_\alpha$（以下，純粋な $g_\alpha$ と呼ぶ）を代入して $\CVaR_\alpha(\hat Z_N)$ を計算する．
-これにより，評価対象とは異なる目的関数を最適化したことによる見かけ上の性能向上という懸念を排除している．
+
+\paragraph{分位点交差（quantile crossing）に関する注意．}
+式\eqref{eq:rho-discrete}が厳密な意味で離散確率分布 $\hat Z_N$ の歪みリスク尺度（特に CVaR）と一致するのは，各区間の原子が分位レベル順に単調
+\begin{equation*}
+  \Finv(\hat\tau_0)\le\Finv(\hat\tau_1)\le\dots\le\Finv(\hat\tau_{N-1})
+\end{equation*}
+を満たしている（分位点交差がない）場合に限られる．真の分位点関数では単調性が常に満たされるため実験Aでは厳密に成り立つ．一方，実験Bのように深層ニューラルネットワークで分位点値を出力する場合，ネットワークの局所的な近似誤差により分位点の逆転（quantile crossing）が生じうる．交差が生じている場合，式\eqref{eq:rho-discrete}は厳密な離散分布の CVaR ではなく，「ネットワークが出力した分位点関数らしきものに対する数値求積（quadrature推定量）」として機能する．厳密な離散分布としての CVaR を評価するには，評価時に原子を値の昇順にソートし対応する累積重みを割り当て直す（あるいは等張回帰を施す）必要があるが，本稿では FQF や IQN の標準的慣行に倣い，分位点関数出力に対する求積推定量としての位置づけを一貫して採用する（なお実験Bの学習済みモデルにおいて主要な意思決定領域で顕著な交差は観測されていない）．
+
+\paragraph{正則化歪み $g_{\alpha,\lambda}$ の最適化と純粋 CVaR 評価の関係．}
+本研究では最適化時に後述の正則化歪み関数 $g_{\alpha,\lambda}=(1-\lambda)g_\alpha+\lambda\,\mathrm{id}$（$\lambda=0.05$）を用いるが，評価では常に式\eqref{eq:rho-discrete}に正則化を含まない純粋な CVaR 歪み関数 $g_\alpha$ を代入して $\CVaR_\alpha(\hat Z_N)$ を計算する．これにより，評価対象とは異なる目的関数を最適化したことによる見かけ上の性能向上という懸念を排除している．
+さらに，命題\ref{prop:bound}の上界は正則化目的 $L_{g_{\alpha,\lambda}}=\int_0^1|\Finv-\Fhinv|g'_{\alpha,\lambda}d\tau$ に対するものであるが，純粋な CVaR 重み付き誤差 $L_{g_\alpha}=\frac1\alpha\int_0^\alpha|\Finv(u)-\Fhinv(u)|du$ との間には，$[0,\alpha)$ において $g'_{\alpha,\lambda}(u)=(1-\lambda)/\alpha+\lambda$ であることから
+\begin{equation}
+  L_{g_\alpha}=\frac{1}{1-\lambda+\lambda\alpha}\int_0^\alpha|\Finv(u)-\Fhinv(u)|g'_{\alpha,\lambda}(u)\,du
+  \;\le\; \frac{1}{1-\lambda+\lambda\alpha} L_{g_{\alpha,\lambda}}
+  \label{eq:reg-bound-relation}
+\end{equation}
+という厳密な不等式が成り立つ．本実験の既定値 $\lambda=0.05$，$\alpha=0.05$ においては係数は $1/(1-0.05+0.05\times0.05)=1/0.9525\approx1.050$ である．すなわち，正則化目的 $L_{g_{\alpha,\lambda}}$ を最小化することは，純粋 CVaR 用の重み付き誤差 $L_{g_\alpha}$ を高々約 5\% の係数差で同時に抑え込むことを理論的に保証している．
 
 %==================== 4 提案モデル ====================
 \section{提案モデル：歪み重み付きquantile fraction提案}
@@ -454,17 +468,22 @@ $L_g=\Wone(\dist Z,\dist\hat Z_N)$ は「歪み分布 $\dist Z$ を $N$ 点の�
   本研究で扱う各分布が既存の量子化定理の仮定を満たすかは別途確認を要する（第\ref{sec:future}節）．
 \end{itemize}
 上記の量子化誤差評価に必要な条件が成り立つ場合，命題\ref{prop:bound}から $\CVaR_\alpha$ の推定誤差にも $O(1/N)$ の上界が得られる．
-CVaR歪み $g_\alpha$ の場合，$\dist Z$ は $Z$ を $Z\le\Finv(\alpha)$ に条件付けた分布であり，
+CVaR歪み $g_\alpha$ の場合，$\dist Z$ は連続分布においては $Z$ を $Z\le\Finv(\alpha)$ に条件付けた分布と一致する（点質量を含む一般の分布では，$\Finv(\alpha)$ の点質量を部分的に含む「下側 $\alpha$ 質量の分布」として厳密に扱われる）．
 その最適量子化は $N$ 点すべてを下側裾 $[0,\alpha]$ に配置する．
 一様配置が同じ領域に置く点数はおよそ $\alpha N$ であるから，
-両者の誤差の比はおおむね「点数の比」$1/\alpha$ になると期待される．
-\begin{conjecture}[誤差上界と下界の比による $1/\alpha$ 改善]
+両者の誤差の比はおおむね「点数の比」$1/\alpha$ 以上になると期待される．
+\begin{conjecture}[誤差上界と下界の比による改善スケーリング]
 \label{conj:alpha}
-$\Finv$ が $(0,\alpha]$ で $C^1$ 級かつ $\Finv\in L^1[0,\alpha]$（$\CVaR_\alpha$ が有限）であり，さらに $(\Finv)'(\tau)=\tau^{-\beta}\ell(\tau)$（$\beta<2$，$\ell$ は緩変動関数．Student-$t_\nu$ では $\beta=1+1/\nu$，ガウス裾では $\beta=1$）の形で $\tau\downarrow0$ において正則変動する（regular variation）正則な分布族に対し，$\alpha N\ge2$ の領域において，一様quantile fractionによる式\eqref{eq:bound-cvar}の上界の下界と，歪み最適quantile fractionによる上界の比は，$\beta\le1$（ガウス裾など）のときオーダーで $\Theta(1/\alpha)$，$\beta\in(1,2)$（Student-$t_\nu$）のとき $\Theta(N^{\beta-1}/\alpha)$ となる．いずれの場合も比は $\Omega(1/\alpha)$ である．
+$\Finv$ が $(0,\alpha]$ で $C^1$ 級かつ $\Finv\in L^1[0,\alpha]$（$\CVaR_\alpha$ が有限）であり，さらに $(\Finv)'(\tau)=\tau^{-\beta}\ell(\tau)$（$\beta<2$，$\ell$ は緩変動関数．Student-$t_\nu$ では $\beta=1+1/\nu$，ガウス裾では $\beta=1$）の形で $\tau\downarrow0$ において正則変動する（regular variation）正則な分布族に対し，$\alpha N\ge2$ の領域において，一様quantile fractionによる式\eqref{eq:bound-cvar}の上界の下界と，歪み最適quantile fractionによる上界の比は，$\beta\le1$（ガウス裾など）のときオーダーで $\Theta(1/\alpha)$，$\beta\in(1,2)$（Student-$t_\nu$）のとき正則変動近似の下で
+\begin{equation}
+  \frac{E_{\mathrm{unif}}}{E_{\mathrm{opt}}} \;\asymp\; \frac{N^{\beta-1}}{\alpha^{2-\beta}}
+  \label{eq:conj-scaling}
+\end{equation}
+型となる．$\alpha N\ge C$（$C$ は定数）の領域では，いずれの場合もこの比は少なくとも $\Omega(1/\alpha)$ 程度の改善を与える．
 \end{conjecture}
-後者（$\beta\in(1,2)$）では一様配置側の上界が第1区間の特異性により $O(N^{-(2-\beta)})$ に律速される一方，歪み最適配置側は Zador 型評価により $O(N^{-1})$ を保つため，比は $N^{\beta-1}/\alpha$ で増大する（一様側の律速は注意\ref{rem:midpoint}と同じ計算である）．
+後者（$\beta\in(1,2)$）では，$(\Finv)'(\tau)\asymp\tau^{-\beta}$ かつ $\Finv(\tau)\asymp -C\tau^{-(\beta-1)}$ と置くと，一様配置の第1区間 $[0,1/N]$ による CVaR 重み付き誤差は $E_{\mathrm{unif}}\asymp\alpha^{-1}N^{-(2-\beta)}$ に律速される一方，歪み最適配置側は領域 $[0,\alpha]$ への適応配置により Zador 型評価 $E_{\mathrm{opt}}\asymp\alpha^{1-\beta}N^{-1}$ を達成するため，両者の比は $N^{\beta-1}\alpha^{\beta-2}=N^{\beta-1}/\alpha^{2-\beta}$ と見積もられる（Student-$t_\nu$ では $\beta=1+1/\nu$ より比は $N^{1/\nu}/\alpha^{1-1/\nu}$）．$\beta=1$（ガウス裾）ではこの指数は $1/\alpha$ に帰着する．
 なお，可積分性の仮定を導関数側（「$(\Finv)'$ が有界」「$(\Finv)'$ が $L^1[0,\alpha]$ に属する」等）に置くと，下側サポート非有界で $(\Finv)'(\tau)\to\infty$（$\tau\downarrow0$）となる分布（D1〜D3 はすべて該当）が除外されるため，可積分性は $\Finv$ 自身（$\CVaR_\alpha$ の有限性）に置き，導関数側は正則変動指数 $\beta<2$ で緩めている（$\beta<2$ は $\CVaR_\alpha$ の有限性，および歪み分布の Zador 定数 $\int f_{\mathcal D_g}^{1/2}\,dz$ の有限性に対応する）．
-また，予想\ref{conj:alpha}は重み付き $\Wone$ 型の誤差\textbf{上界}に関する比である一方，注意\ref{rem:midpoint}で扱うのは CVaR の符号付き誤差そのものであり，両者は別の量である（後者の実測では $N$ 依存の改善比として観測される．注意\ref{rem:midpoint}参照）．
+また，予想\ref{conj:alpha}は重み付き $\Wone$ 型の誤差\textbf{上界}に関する比である一方，注意\ref{rem:midpoint}で扱うのは CVaR の符号付き誤差そのものの二次精度であり，両者は別個の数学的対象である（後者の実測では符号相殺により二次減衰 $O(N^{-2})$ が観測される．注意\ref{rem:midpoint}参照）．
 \begin{remark}[裾特異性と適応配置による二次精度]
 \label{rem:midpoint}
 正則化歪み $g_{\alpha,\lambda}$ は $[0,\alpha)$ 上で線形であるため，$g$-中央値は算術中点と一致し，歪み最適配置による CVaR 推定は $[0,\alpha]$ 上の\textbf{非一様格子}中点則に一致する．
@@ -499,21 +518,33 @@ $\hat\tau_{i-1}\le\tau_i\le\hat\tau_i$ と $\Finv$ の単調性により絶対�
 となり，式\eqref{eq:dist-grad}を得る．
 \end{proof}
 すなわち，\textbf{母集団目的における提案法の境界勾配は FQF のquantile fractionに関する勾配（式\eqref{eq:fqf-grad}）に $g'(\tau_i)$ を乗じたものに一致する}．
-実装では，真の分位点関数 $\Finv$ を分位点値ネットワークの出力 $\Finv_{\omega_2}$ で置き換え，
-その出力への勾配を停止したplug-in型のFPN更新として式\eqref{eq:dist-grad}を用いる（全体の手順は\ref{subsec:impl}節）．
-本命題は母集団設定における包絡勾配を導出したものであり，深層強化学習の実装においては，分位点値ネットワークに plug-in した擬似勾配更新（stop-gradient 型）として用いる．
+
+\paragraph{命題\ref{prop:grad}の成立条件と解釈．}
+本命題が成立するための数学的条件は以下の4点である：
+(a) $g$ が非減少・正規化・絶対連続であり，考える境界において導関数 $g'(\tau_i)$ が存在すること（$\tau_i\ne\alpha$．折点では劣勾配），
+(b) $\Finv$ が連続かつ非減少であること（点質量のない領域），
+(c) 各原子 $q_i$ が厳密に区間の $g$-中央値 $\Finv(\hat\tau_i)$ に配置されていること（この条件によって包絡線定理 $\partial\ell_j^g/\partial q_j=0$ が成り立ち，原子の移動を通じた間接的な $\tau_i$ 依存項が消滅する．原子を算術中点のままにするとこの項が消えず，厳密な勾配とならず近似にとどまる），
+(d) 境界 $\tau_i$ が開区間 $(0,1)$ の内部にあること．
+
+\paragraph{実装における擬似勾配と代理損失（stop-gradient 構造）．}
+深層強化学習の実装において式\eqref{eq:dist-grad}を適用する際，これを通常の自動微分（autograd）で直接計算させると，分位点値ネットワーク $Q$ 側への不必要なバックプロパゲーションや，Wang 変換のように $g'$ が滑らかに変化する場合に $g'(\tau_i)$ 自体の微分（$g''$ 項）が混入する恐れがある．
+欲しいのは $Q$ や $g'$ への微分を遮断した境界勾配値
+\begin{equation}
+  d_i = g'(\tau_i)\left[2\Finv_{\omega_2}(\tau_i) - \Finv_{\omega_2}(\hat\tau_i) - \Finv_{\omega_2}(\hat\tau_{i-1})\right]
+  \label{eq:grad-val}
+\end{equation}
+を FPN に流すことである．そこで実装（第\ref{subsec:impl}節，\texttt{fqf.py}）では，$d_i$ を \texttt{with torch.no\_grad():} 内で計算して完全に勾配を停止（stop-gradient）した上で，FPN の出力 $\tau_i$（$i=1,\dots,N-1$）に対する代理損失（surrogate loss）
+\begin{equation}
+  L_{\mathrm{frac}} = \sum_{i=1}^{N-1} \operatorname{stopgrad}(d_i)\,\tau_i
+  \label{eq:surrogate-loss}
+\end{equation}
+を定義し，$\partial L_{\mathrm{frac}}/\partial\tau_i = d_i$ として FPN のパラメータ $\omega_1$ にのみ勾配を逆伝播させる（FQF 公式実装の設計に整合）．
 学習途中のネットワーク出力が各区間の損失 $\ell_j^g$ の厳密な最小点である保証はなく，また FQF 原論文自身，深層ニューラルネットワークとベルマン更新を組み合わせた系の収束性は理論的に保証していない点に留意されたい．
-また $\Finv$ や $g$ に平坦部がある場合，または $\tau_i=\alpha$（$g'_{\alpha,\lambda}$ の不連続点）にある場合には式\eqref{eq:dist-grad}は片側微分または劣勾配として理解する．
-命題\ref{prop:grad}の適用条件をまとめると，(a) $g$ が非減少・正規化・絶対連続であること，(b) 考える境界で $g'(\tau_i)$ が存在すること（折点では劣勾配），(c) $\Finv$ が連続かつ非減少であること，(d) 原子が各区間の $g$-中央値に置かれていること，の4点であり，実装では至る所 $g'>0$ で区分線形な正則化歪み $g_{\alpha,\lambda}$ を用いるため (b) は $\tau_i\ne\alpha$ の管理で充足される．
 勾配が零となる条件「$\Finv(\tau_i)$ が隣接原子の中点」は FQF と同じであるが，
-原子の定義が変わっているため停留点の位置は異なる．
-なお，$g'(\tau_i)>0$ である限り勾配に乗じられる係数だけを見れば零点は変化しないが，
-提案法では代表点 $\hat\tau_i$ が算術中点から $g$-中央値へ変化するため勾配式の括弧内も変化し，
-最終的な停留点配置は通常の FQF とは異なる．
+代表点 $\hat\tau_i$ が算術中点から $g$-中央値へ変化するため勾配式の括弧内も変化し，最終的な停留点配置は通常の FQF とは異なる．
 学習ダイナミクスとしては，すでに $\tau_i<\alpha$ に位置する境界は大きな勾配係数 $(1-\lambda)/\alpha+\lambda$ を受ける一方，
 $\tau_i>\alpha$ にある境界では係数が $\lambda$ にとどまるため，
 初期配置によっては裾への移動が遅くなる可能性がある（実験Bの seed 依存性はこの現象と整合する）．
-また，原子を $g$-中央値にせず算術中点のままにすると (b) の項が消えず，式\eqref{eq:dist-grad}は厳密な勾配とならずその近似にとどまる．
 
 \subsection{正則化歪み関数}
 CVaR 歪み $g_\alpha$ は $(\alpha,1]$ で $g'_\alpha=0$ であるため，そこにあるquantile fractionの勾配が零となって動かなくなり，
@@ -589,7 +620,7 @@ Rockafellar and Uryasev \cite{rockafellar2000cvar} & CVaR の変分表現と凸�
 
 \subsubsection{実験手順}
 \begin{enumerate}
-  \item \textbf{対象分布}（いずれも損益であり，下側裾がヘビー）を用意する．
+  \item \textbf{対象分布}（裾形状・非対称性の異なる3分布．D1 は損失クラスタを持つ左裾の厚いガウス混合，D2・D3 は下側に重い裾をもつヘビーテイル分布）を用意する．
   D1：ガウス混合 $0.9\,\mathcal N(0,1)+0.1\,\mathcal N(-4,1)$，
   D2：負の対数正規 $Z=e^{\sigma^2/2}-\exp(\sigma\xi)$，$\xi\sim\mathcal N(0,1)$，$\sigma=1$（平均0），
   D3：Student-$t$（自由度 $\nu=3$）．
@@ -597,7 +628,7 @@ Rockafellar and Uryasev \cite{rockafellar2000cvar} & CVaR の変分表現と凸�
   $\CVaR_\alpha(Z)=\alpha^{-1}\mathrm{PE}(-\infty,\Finv(\alpha))$ とする（ガウス混合の $\Finv$ 自身は単純な閉形式をもたない）．$10^7$ サンプルのモンテカルロ（seed 0）で $|\text{参照値}-\text{MC}|<3\,\mathrm{SE}$（SE は MC 推定量の標準誤差）をクロスチェックする．
   \item \textbf{格子}を $N\in\{8,16,32,64,128,256\}$（2の冪），$\alpha\in\{0.01,0.05,0.1\}$ とする．
   \item \textbf{比較手法}として以下を実装する．
-  M0：一様配置 $\tau_i=i/N$，算術中点原子（FQF相当）．
+  M0：一様固定配置 $\tau_i=i/N$，算術中点原子 $\hat\tau_i=(2i+1)/(2N)$（QR-DQN 型の等間隔固定 fraction 配置，あるいは FQF の初期配置に相当するベースライン．母集団 FQF が解くべき $g(\tau)=\tau$ の一様 $W_1$ 最適量子化配置とは異なり，最適化を行わない固定格子であることに留意されたい）．
   M1：$g$-一様配置（$g$-uniform）$\tau_i=g^{-1}(i/N)$（裾の事前知識のみを与えた対照，最適化なし）．
   M2：数値最適化で得た候補解（以下，便宜上「歪み最適配置」と呼ぶ．大域最適性は保証しない）．$\tau=\mathrm{cumsum}(\mathrm{softmax}(\theta))$（$\theta$ は最適化変数であるソフトマックス前の実数ベクトルで，QR-DQN の原子 $\theta_i$ とは別物）とパラメータ化し，
   式\eqref{eq:dist-grad}の解析勾配をソフトマックスのヤコビアンで連鎖して L-BFGS-B（制約付き準ニュートン法ソルバ，maxiter 500，gtol $10^{-10}$）で $L_g$ を最小化する．
@@ -614,18 +645,18 @@ Rockafellar and Uryasev \cite{rockafellar2000cvar} & CVaR の変分表現と凸�
 
 \subsubsection{結果}
 図\ref{fig:placement}は D1，$N=16$，$\alpha=0.05$ におけるquantile fraction配置を分位点関数上に示したラグプロット（rug plot. 各データ点を軸上に短い縦線で示すプロット）である．
-一様配置 M0 は裾 $[0,\alpha]$ に1点も置かないのに対し，提案法 M2 は15個の内部quantile fractionのうち13個を $[0,\alpha]$ 内に配置し，
+一様固定配置 M0 は内部境界を裾 $[0,\alpha]$ に1点も置かない（CVaR 領域 $[0, 0.05]$ は実質的に第1中点原子 $\Finv(1/32)$ 1点のみで代表される）のに対し，提案法 M2 は15個の内部quantile fractionのうち13個を $[0,\alpha]$ 内に配置し，
 残りを $\lambda$ による重みで分布の残部に割り当てている．これは第\ref{sec:proposed}節の「歪み分布の最適量子化」という特徴づけの直接の可視化である．
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\linewidth]{fig_placement.png}
-\caption{D1（ガウス混合），$N=16$，$\alpha=0.05$ におけるquantile fraction配置のラグプロット．上から M0（一様），M1（$g$-一様配置），M2（歪み最適）．網掛けは下側裾 $[0,\alpha]$．}
+\caption{D1（ガウス混合），$N=16$，$\alpha=0.05$ におけるquantile fraction配置のラグプロット．上から M0（一様固定配置），M1（$g$-一様配置），M2（歪み最適）．網掛けは下側裾 $[0,\alpha]$．}
 \label{fig:placement}
 \end{figure}
 
 表\ref{tab:A1}に $\alpha=0.05$，$N=16$ での結果を示す．3分布すべてで改善比 $R$ は主結果表の判定基準として事前に定めた $R\ge2$ を大きく上回った．
-なお，$N=16, \alpha=0.05$ の一様配置 M0 では最初の区間 $[0, 1/16]$ が $[0, \alpha]$ を完全に覆うため，CVaR 推定が単一分位点 $\Finv(1/32)$ \textbf{のみで行われる特殊設定}であることに留意されたい．
+なお，$N=16, \alpha=0.05$ の一様固定配置 M0 では最初の区間 $[0, 1/16]$ が $[0, \alpha]$ を完全に覆うため，CVaR 推定が単一分位点 $\Finv(1/32)$ \textbf{のみで行われる特殊設定}であることに留意されたい．
 D1 で $R=97.9$ に達するのは，混合成分 $\mathcal N(-4,1)$ による損失クラスタが $\tau<0.1$ に存在し，
 一様配置の単一分位点ではこの構造がほぼ捉えられないためである．
 より客観的な比較として，後述の仮説 H1 対象領域 $\alpha N\ge2$ における最小改善比は $R=42.3$ であった．
@@ -639,17 +670,17 @@ $|\text{参照値}-\text{MC}|<3\,\mathrm{SE}$ を満たすことを確認した�
 
 \begin{table}[htbp]
 \centering
-\caption{実験A主結果（$\alpha=0.05$，$N=16$）．$e$ は $\CVaR_\alpha$ 推定の絶対誤差，$R=e_{\mathrm{M0}}/e_{\mathrm{M2}}$．M1 は裾の事前知識のみを与えた対照（$g$-一様配置，最適化なし）．M2 は真の $\Finv$ を用いる真値参照設定である．判定列 $R\ge2$ は全格子での最低基準である．}
+\caption{実験A主結果（$\alpha=0.05$，$N=16$）．$e$ は $\CVaR_\alpha$ 推定の絶対誤差，$R=e_{\mathrm{M0}}/e_{\mathrm{M2}}$．M0 は一様固定配置（QR-DQN 型ベースライン）．M1 は裾の事前知識のみを与えた対照（$g$-一様配置，最適化なし）．M2 は真の $\Finv$ を用いる真値参照設定である．判定列 $R\ge2$ は全格子での最低基準である．}
 \label{tab:A1}
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lcccccc}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lrrrrcc}
 \toprule
-分布 & $e_{\mathrm{M0}}$ & $e_{\mathrm{M1}}$ & $e_{\mathrm{M2}}$ & $R$ & 判定（$R\ge2$） & M2の $[0,\alpha]$ 内quantile fraction数\\
+分布 & $e_{\mathrm{M0}}$ & $e_{\mathrm{M1}}$ & $e_{\mathrm{M2}}$ & $R$ & 判定（$R\ge2$） & M2の $[0,\alpha]$ 内q.f.数\\
 \midrule
-D1 ガウス混合 & $0.309$ & $0.0626$ & $0.00316$ & 97.9 & PASS & 13 / 15（M0 は 0）\\
-D2 負の対数正規 & $2.12$ & $0.245$ & $0.0404$ & 52.4 & PASS & 13 / 15\\
-D3 Student-$t$（自由度3） & $0.974$ & $0.148$ & $0.0246$ & 39.6 & PASS & 13 / 15\\
+D1 ガウス混合 & 0.309 & 0.0626 & 0.00316 & 97.9 & PASS & 13 / 15（M0 は 0）\\
+D2 負の対数正規 & 2.120 & 0.2450 & 0.04040 & 52.4 & PASS & 13 / 15\\
+D3 Student-$t$（自由度3） & 0.974 & 0.1480 & 0.02460 & 39.6 & PASS & 13 / 15\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -700,7 +731,7 @@ CVaR 以外の歪みリスク尺度に対しても提案法が同様に機能す
 
 \subsubsection{環境 RiskyChain-v0}
 自作環境 RiskyChain-v0（gymnasium API，離散行動）を用いる．
-ホライズン（1エピソードあたりの最大ステップ数）$H=10$，位置 $x\in\{0,\dots,9\}$，$\gamma=1$ である．観測は $\mathrm{onehot}(x)\oplus t/H$ の11次元ベクトルである．ここで $\mathrm{onehot}(x)$ は位置 $x$ に対応する1成分だけが1で他が0の10次元ベクトル（例：$x=3$ なら $(0,0,0,1,0,0,0,0,0,0)$），$t$ は開始からの経過ステップ数，$\oplus$ は2つのベクトルを直列に結合する操作（連結，concatenation）を表す．10次元の $\mathrm{onehot}(x)$ の後ろに1次元の値 $t/H\in[0,1]$（経過時間の割合）を結合するため，観測は11次元となる．
+ホライズン（1エピソードあたりの最大ステップ数）$H=10$，位置 $x\in\{0,\dots,9\}$，$\gamma=1$ である（有限ホライズンかつ経過時間割合 $t/H$ を状態に含めているため，$\gamma=1$ でも動的計画問題として収益は有限かつ明確に定まる．ただし第\ref{sec:drl}節の無限ホライズンにおける $\gamma$-縮小写像の議論とは設定が異なる）．観測は $\mathrm{onehot}(x)\oplus t/H$ の11次元ベクトルである．ここで $\mathrm{onehot}(x)$ は位置 $x$ に対応する1成分だけが1で他が0の10次元ベクトル（例：$x=3$ なら $(0,0,0,1,0,0,0,0,0,0)$），$t$ は開始からの経過ステップ数，$\oplus$ は2つのベクトルを直列に結合する操作（連結，concatenation）を表す．10次元の $\mathrm{onehot}(x)$ の後ろに1次元の値 $t/H\in[0,1]$（経過時間の割合）を結合するため，観測は11次元となる．
 行動 SAFE は決定的報酬 $0.1$ を与え位置は不変，行動 RISKY は確率 $1-p(x)$ で成功（報酬 $0.5$，$x\leftarrow x+1$），
 確率 $p(x)=0.002(x+1)$ でクラッシュし，ヘビーテイル損失 $-5(1+|T_3|)$（$T_3$ は自由度3の Student-$t$ 分布に従う確率変数）を受けて位置は不変となる．
 到達可能な状態は $55$ 個であり，すべての $x$ で $\E[\mathrm{RISKY}]>0.1$ のためリスク中立最適方策は常に RISKY である一方，
@@ -721,12 +752,12 @@ CVaR 以外の歪みリスク尺度に対しても提案法が同様に機能す
   なお，FQF 原論文における FPN 最適化のエントロピー正則化や RMSprop は本実験では用いず，Adam による標準的最適化としている．
   ベルマン標的に用いる次状態の行動は，ターゲットネットワークが推定する $\CVaR_{0.05}$ を最大化する行動（CVaR-greedy）として選択した．
   \item \textbf{Bellman 標的の原子重み付け}：ベルマン標的を構成する際，FQF 系（B0/B1/B1g）はターゲット側の離散分布の原子を区間幅で重み付けして損失を計算する（FPN が定義する離散分布を忠実に反映）．
-  すなわち，ターゲット側の境界 $\tau'_j$，原子 $q'_j$（$j=1,\dots,N$）と現在側の level $\tau_i$・原子 $q_i$ に対し，
+  すなわち，ターゲット側の境界 $\tau'_j$，原子 $q'_j$（$j=0,\dots,N-1$）と現在側の代表 level $\hat\tau_i$・原子 $q_i$ に対し，
   \begin{equation}
-    \mathcal{L}_{\mathrm{QR}}=\frac1N\sum_{i=1}^N\sum_{j=1}^N w'_j\,\rho^\kappa_{\tau_i}\!\left(r+\gamma q'_j-q_i\right),\qquad w'_j=\tau'_{j+1}-\tau'_j
+    \mathcal{L}_{\mathrm{QR}}=\frac1N\sum_{i=0}^{N-1}\sum_{j=0}^{N-1} w'_j\,\rho^\kappa_{\hat\tau_i}\!\left(r+\gamma q'_j-q_i\right),\qquad w'_j=\tau'_{j+1}-\tau'_j
     \label{eq:b-loss}
   \end{equation}
-  を最小化する（$\rho^\kappa_\tau$ は式\eqref{eq:huber-quantile}の分位点 Huber 損失）．
+  を最小化する（$\rho^\kappa_\tau$ は式\eqref{eq:huber-quantile}の分位点 Huber 損失）．ここで $\hat\tau_i$ は予測原子 $q_i$ に対応する代表分位レベル（FQF では中点 $\hat\tau_i=(\tau_i+\tau_{i+1})/2$，提案法では $g$-中央値 $\hat\tau_i=g_{\alpha,\lambda}^{-1}((g_{\alpha,\lambda}(\tau_i)+g_{\alpha,\lambda}(\tau_{i+1}))/2)$）であり，境界 $\tau_i$ ではなく代表 level $\hat\tau_i$ を pinball 損失の分位レベルに用いる（実装コード \texttt{fqf.py}，\texttt{common.py} でも正しくこの代表 level $\hat\tau_i$ が渡されている）．
   一方，IQN 系（B2/B2p）はターゲット $\tau'_j$ を学習時のサンプリング分布（B2 は一様，B2p は歪み分布）からサンプルし，等重み $w'_j=1/N$ で平均する（重要度重みは付けない）．
   \item \textbf{比較手法}：
   \begin{itemize}
@@ -743,10 +774,11 @@ CVaR 以外の歪みリスク尺度に対しても提案法が同様に機能す
   さらに重要な交絡として，\textbf{推定対象となる収益分布そのものが手法間で異なる}：各手法の greedy 方策が異なるため（B0 は all-RISKY，B1g/B2 はほぼ all-SAFE），B0 は重い裾をもつ分布を，B1g/B2 はほぼ確定値に近い分布を推定している．この交絡を検討する共通方策下の交差評価を第\ref{subsec:cross}節に追加した．
   \item (ii) \textbf{M-pol}：5{,}000 評価エピソード（$\varepsilon=0$）の収益の経験 $\CVaR_{0.05}$ および平均収益，
   (iii) \textbf{quantile fraction診断}：100k ステップ時点での全評価状態にわたる学習済み $\tau$ の $[0,\alpha]$ 内のquantile fraction数．
-  \item \textbf{IQN 系の CVaR 推定方法}：B0・B1・B1g は 16 個の重み付き原子から式\eqref{eq:rho-discrete}により CVaR を算出する．
+  \item \textbf{IQN 系の CVaR 推定方法と読み出しの公平性}：B0・B1・B1g は 16 個の重み付き原子から式\eqref{eq:rho-discrete}により CVaR を算出する．
   一方 B2・B2p（IQN）は固定原子分布をもたないため，評価には $\tau$ を $(0,\alpha)$ 内の等間隔16点 $\tau_j=\alpha(2j-1)/(2N)$ に固定した決定的グリッドを用い，
   出力分位点値の平均を CVaR 推定値とする．
   この読み出しは裾に16点すべてを割り当てられるため，B1g の「裾に約14個」という配置とは読み出し構造が異なり（IQN の連続 $\tau$ 入力がもつ本来の柔軟性である），B2 の有利性の一部はこの読み出し差に由来する可能性がある（第\ref{subsec:cross}節の交差評価とあわせて解釈されたい）．
+  より公平な評価プロトコルとしては，FQF の分位点値ネットワークにも $(0,\alpha)$ の等間隔グリッドを入力して読み出す評価や，逆に IQN を 16 点の重み付き離散原子風に読み出す評価が考えられ，今後の比較課題とする（第\ref{sec:future}節）．
 \end{enumerate}
 
 \begin{remark}[実験Bが測るもの]
@@ -852,12 +884,12 @@ B2p IQN（学習時歪み $\tau$） & $4.19\pm1.48$ & $4.25\pm0.46$\\
 
 \subsection{考察}
 \begin{itemize}
-  \item \textbf{原理の検証（実験A）}：真の $\Finv$ の下では提案法はすべての設定で一様配置を大幅に上回った．
+  \item \textbf{原理の検証（実験A）}：真の $\Finv$ の下では提案法 M2 はすべての設定で一様固定配置 M0 を大幅に上回った．なお M0 は母集団 FQF が解くべき一様 $W_1$ 最適量子化配置ではなく固定配置であるため，この結果は一様固定配置に対する目的指向の適応配置の優位性を示すものである（一様 $W_1$ 最適配置との完全な比較は今後の課題として位置づけられる）．
   観測された傾き $-1.79$〜$-1.84$ は歪み最適配置 M2 のものであり，一様格子では下側裾の特異性に $O(N^{-(1-1/\nu)})$ で律速される一方，適応配置はそれを回避するという注意\ref{rem:midpoint}の機序と整合する．
   改善比は $N$ 依存で増大するため，予想\ref{conj:alpha}（誤差上界の比 $\Theta(1/\alpha)$）と注意\ref{rem:midpoint}（漸近オーダーの目安 $1/\alpha^2$）を固定 $N$ の実測値と直結させず，傾向の整合として解釈している．
   \item \textbf{RL への移植と初期化（実験B）}：$g$-一様初期化を導入した B1g は，FQF に対して推定誤差を約7分の1（限定状態で約37分の1）に低減した．初期化を理論配置に近づけることで，旧 B1 で見られた seed 0 の局所解トラップが完全に解消され，下側裾への確実な解像度集中が実現された．共通方策下の交差評価（表\ref{tab:B2}）では，all-RISKY 分布（重い裾）の参照で全評価器の MAE が $4.3$〜$7.0$ に達し，推定対象の難易度が誤差を支配することが示唆された．ただし本評価は継続方策の不一致を含むため表現精度だけの分離にはならず，厳密な分離は方策評価モードでの再学習による（第\ref{sec:future}節）．また固定配置 ablation（B3g，MAE $0.74$）が B1g（$0.96$）と同程度の精度を示したことから（差は 3 シードの標本 SD 内），toy 環境での改善の主因は理論配置の採用であり，FPN の状態依存最適化の寄与は本環境では限定的である（表\ref{tab:B1}）．
   \item \textbf{B2p との対照}：B2p の劣化はターゲット側のサンプリングに起因すると解釈される．現在側 level $\tau_i$ の分布を歪めても各 level での分位回帰の一致性は保たれるが，ターゲット側 $\tau'_j\sim g^{-1}(U)$ の等重み標本は $r+\gamma Z'$ ではなく歪み分布 $\dist(r+\gamma Z')$ からの標本となるため，ネットワークは $F^{-1}_{\dist Z}(\tau)=\Finv(g^{-1}(\tau))$ を学習する．読み出し $\tau\in(0,\alpha)$ では $g^{-1}_{\alpha,\lambda}(\tau)\approx\alpha\tau/(1-\lambda)$ という遥かに深い分位点を返し，CVaR を系統的に過小評価する．参照方策に依らず MAE が約 $4.2$ で一定であること（表\ref{tab:B2}）はこの解釈と整合する．重要度重み $1/g'(\tau'_j)$ の付加，現在側のみを歪める変種，読み出し $\tau$ を $g(\tau)$ に写す逆変換変種といった公平な対照は将来課題とする．したがってこの結果は sampling 系の代替法一般の劣位を示すものではなく，また現行の B2p の設定をもって表現側再配分の本質性を実証するものでもない．本実験の範囲での事実は，単純なサンプリング置換では安定した絶対 $\CVaR$ 推定に至らなかった一方，提案法は非裾領域の学習を保持したまま境界と重みを明示的に制御できる点である．
-  \item \textbf{IQN との比較と位置づけ}：依然として B2 IQN（0.36）が最良の精度を示しており，提案法の一般的優位性は未確認である．IQN は連続的な分位レベルを入力できる表現力の高さをもつ一方，FQF 系は有限個の離散境界と原子を明示的に保持するため状態ごとの解釈性・可視化性に優れる．本研究の意義は，この離散表現型 RL においてリスク尺度に応じた目的指向量子化を達成した点にある．なお，歪み関数 $g_\alpha$ はリスク水準 $\alpha$ に依存するため，$\alpha$ を変更する場合は FPN の再初期化・再学習を要する．これは学習済み分布を再利用して任意の $\alpha$ で行動選択できる IQN に対する本手法の限界であり，実験C（第\ref{sec:future}節）で定量比較する予定である．
+  \item \textbf{IQN との比較と位置づけ}：依然として B2 IQN（0.36）が最良の精度を示しており，提案法の一般的優位性は未確認である．IQN は連続的な分位レベルを入力できる表現力の高さをもつ一方，FQF 系は有限個の離散境界と原子を明示的に保持するため状態ごとの解釈性・可視化性に優れる．また前述のとおり，B2 は評価時に $(0,\alpha)$ の等間隔16点を直接読み出すのに対し，B1g は学習された原子（裾に約14個）から読み出すというプロトコルの差異も B2 に有利に働いている可能性がある．FQF の分位点値ネットワークにも連続レベルを入力して読み出す対照や，逆に IQN を離散原子風に評価する設定など，読み出しプロトコルを揃えた公平な比較は実験Cで検証する．本研究の意義は，この離散表現型 RL においてリスク尺度に応じた目的指向量子化を達成した点にある．なお，歪み関数 $g_\alpha$ はリスク水準 $\alpha$ に依存するため，$\alpha$ を変更する場合は FPN の再初期化・再学習を要する．これは学習済み分布を再利用して任意の $\alpha$ で行動選択できる IQN に対する本手法の限界であり，実験C（第\ref{sec:future}節）で定量比較する予定である．
   \item \textbf{有限サンプルの影響}：A-fs で改善幅が縮んだことは，裾にquantile fractionを集中させることが「裾のデータの少なさ」に対する感度と表裏一体であることを示す．
 \end{itemize}
 %==================== 6 今後の展望 ====================
@@ -873,7 +905,7 @@ B2p IQN（学習時歪み $\tau$） & $4.19\pm1.48$ & $4.25\pm0.46$\\
   さらに，Black--Scholes モデルは連続拡散であり理論的には完全複製可能であるため，裾の重い損益を真にもたらす第一級の拡張として Merton のジャンプ拡散過程や Heston 型の確率的ボラティリティモデルを取り入れた環境での検証を推進する．
   \item \textbf{誤差上界および中点則の定理化}：予想\ref{conj:alpha}の数学的証明を与え，定理として確立することを目指す．
   証明の方針として以下の2ルートを想定している：(i) 中間レポートで示した裾特異性の機序（一様配置は $O(N^{-(1-1/\nu)})$ に律速，適応配置は第1区間幅の急減によりこれを回避）と正則部の中点則二次精度（注意\ref{rem:midpoint}）を厳密な命題として定式化し，符号付き誤差の減衰レートを導出するルート，(ii) Graf and Luschgy \cite{graf2000quantization} の非漸近量子化評価を用いて一様配置の下界と歪み最適配置の上界の比を評価するルートである．
-  \item \textbf{ベースライン比較の拡充}：固定配置の ablation（B3/B3g）は実施済みである（第\ref{subsec:expB}節）．残る課題として，(i) 共通方策下の交絡の厳密な分離として，行動選択・Bellman 標的の次状態行動・探索をすべて all-RISKY に固定した\textbf{方策評価モード}で B0/B1g/B2 を再学習し，同一参照と比較する，(ii) B2p の公平な対照として，重要度重み $1/g'(\tau'_j)$ 付加・現在側のみ歪め・読み出しを $g(\tau)$ に写す逆変換の各変種を実装する，(iii) 境界移動と代表点の効果の分離，および Moghimi and Ku \cite{moghimi2025beyond} の静的スペクトルリスク尺度最適化との比較を行う，を予定している．
+  \item \textbf{ベースライン比較の拡充}：固定配置の ablation（B3/B3g）は実施済みである（第\ref{subsec:expB}節）．残る課題として，(i) 共通方策下の交絡の厳密な分離として，行動選択・Bellman 標的の次状態行動・探索をすべて all-RISKY に固定した\textbf{方策評価モード}で B0/B1g/B2 を再学習し，同一参照と比較する，(ii) B2p の公平な対照として，重要度重み $1/g'(\tau'_j)$ 付加・現在側のみ歪め・読み出しを $g(\tau)$ に写す逆変換の各変種を実装する，(iii) 読み出しプロトコルを揃えた比較（FQF の連続分位点読み出し，IQN の固定離散原子読み出し）により表現と読み出しの寄与を分離する，(iv) 境界移動と代表点の効果の分離，および Moghimi and Ku \cite{moghimi2025beyond} の静的スペクトルリスク尺度最適化との比較を行う，を予定している．
   toy 環境でもクラッシュ規模を位置依存（例：$-5(1+|T_3|)(1+x/3)$）に変更すれば状態依存性を低コストで導入でき，FPN 学習の寄与を数時間規模で先行的に検証できる．
   状態ごとに最適配置が異なる環境（実験C のヘッジ損益）では FPN の状態依存最適化が効くかを検証する．
   実験Bはシード数を 10 以上に拡張して統計的な優位性（bootstrap 信頼区間，paired comparison を含む）を確認するとともに，
