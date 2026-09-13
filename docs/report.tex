@@ -76,7 +76,7 @@ CVaR推定誤差の低減}\\[0.6cm]
 しかし，金融リスク管理をはじめ多くの意思決定問題では，収益の「平均」よりも「稀に発生する大きな損失」を正確に把握することが重要である．
 たとえばオプションを売却した投資家は，原資産を売買してデルタヘッジを行うが，離散的なリヘッジと取引コストのもとでは
 ヘッジ損益の分布は非対称で，下側に厚い裾をもつ（正規分布より裾が重く，稀だが巨大な損失が無視できない確率で発生する分布，あるいは損失側に局所的な確率の偏り（多峰性）をもつ歪んだ分布となる）．
-このとき投資家が重視すべきは分散ではなく，最悪側の累積確率 $\alpha$ における平均損失である．本報告では以下，損益 $Z$ を基準としてこの量を「下側 CVaR$_\alpha$ の\textbf{最大化}」という規約で扱う（第\ref{sec:drm}節の符号規約を参照）\cite{rockafellar2000cvar}．
+このとき投資家が重視すべきは分散ではなく，最悪側の累積確率 $\alpha$ における平均損失である．本レポートでは以下，損益 $Z$ を基準としてこの量を「下側 CVaR$_\alpha$ の\textbf{最大化}」として統一的に扱う（第\ref{sec:drm}節の符号の扱いを参照）\cite{rockafellar2000cvar}．
 
 分布型強化学習 \cite{bellemare2017c51,dabney2018qrdqn,dabney2018iqn,yang2019fqf} は収益分布 $Z^\pi$ 全体を学習するため，
 学習した分布から $\CVaR_\alpha$ を計算してリスク回避的な方策を導くことが原理的に可能である．
@@ -234,7 +234,7 @@ $\tau_i$ は区間 $i-1$ の積分上限かつ区間 $i$ の積分下限とし�
 \subsection{系譜のまとめ}
 表\ref{tab:lineage}に4手法を整理する．C51からFQFへの発展は「値側の固定」から「確率側の固定」，そして「確率側の学習」への移行である．
 ただし FQF においてもquantile fractionの学習基準は一様重み $\Wone$ であり，リスク尺度は反映されていない．
-本研究はこの最後の欄を埋めるものである．
+本研究は，この未開拓であった quantile fraction の決定基準に歪みリスク尺度を反映させる拡張を試みるものである．
 
 \begin{table}[htbp]
 \centering
@@ -261,7 +261,7 @@ FQF \cite{yang2019fqf} & 分位点（可変確率） & なし & 分位点回帰�
 
 \subsection{定義}
 以下，$Z$ は損益（大きいほど良い）を表す実数値確率変数とし，リスクは下側裾にあるとする．
-したがって本研究で「リスク尺度」と呼ぶ $\rho_g(Z)$ は，損失 $L=-Z$ に対して最小化されるリスク尺度というよりも，\textbf{収益 $Z$ に対する歪み重み付き評価（risk-adjusted value）}であり，下側 CVaR の\textbf{最大化}を目的とする規約で一貫させる（損失を正値として最小化する規約と混同しないよう留意されたい）．
+したがって本研究で「リスク尺度」と呼ぶ $\rho_g(Z)$ は，損失 $L=-Z$ に対して最小化されるリスク尺度というよりも，\textbf{収益 $Z$ に対する歪み重み付き評価（risk-adjusted value）}であり，下側 CVaR の\textbf{最大化}を目的とする方針で統一する（損失を正値として定義し最小化する定式化と混同しないよう留意されたい）．
 \begin{definition}[歪み関数と歪みリスク尺度]
 非減少で $g(0)=0$，$g(1)=1$ を満たす関数 $g:[0,1]\to[0,1]$ を歪み関数と呼ぶ．
 $g$ が絶対連続で導関数 $g'$ をもつとき，歪みリスク尺度を
@@ -276,7 +276,7 @@ $g$ が凹関数のとき $g'$ は非増加であり，小さい $\tau$（悪い
 この形の尺度は Yaari の双対理論 \cite{yaari1987dual} に由来し，期待効用理論が「値」を効用関数で変換するのに対し，
 「確率」を歪み関数で変換する．
 Moghimi and Ku \cite{moghimi2025beyond} が扱うスペクトルリスク尺度 $\int_0^1\Finv(\tau)\phi(\tau)d\tau$ は，
-リスクスペクトル $\phi=g'$ と対応させれば式\eqref{eq:drm}と同じ族である．
+リスクスペクトル $\phi=g'$ と対応させれば式\eqref{eq:drm}と数学的に同等な枠組みである．
 
 \subsection{CVaR とその分位点表現}
 \label{subsec:cvar}
@@ -288,12 +288,12 @@ Moghimi and Ku \cite{moghimi2025beyond} が扱うスペクトルリスク尺度 
 \end{equation}
 と定義する．
 \end{definition}
-式\eqref{eq:cvar}の分位点積分表現（一般化逆関数 $\Finv$ による）を本報告の基準定義とする．連続分布では $\CVaR_\alpha(Z)=\E[Z\mid Z\le\Finv(\alpha)]$，すなわち最悪側の累積確率 $\alpha$ における損益の平均と一致するが，この条件付き期待値表現は連続分布に限った解釈であり，点質量を含む分布（実験Bの all-SAFE 方策下など）では式\eqref{eq:cvar}または Rockafellar--Uryasev 変分表現を基準に用いる．
+式\eqref{eq:cvar}の分位点積分表現（一般化逆関数 $\Finv$ による）を本レポートの基準定義とする．連続分布では $\CVaR_\alpha(Z)=\E[Z\mid Z\le\Finv(\alpha)]$，すなわち最悪側の累積確率 $\alpha$ における損益の平均と一致するが，この条件付き期待値表現は連続分布に限った解釈であり，点質量を含む分布（実験Bの all-SAFE 方策下など）では式\eqref{eq:cvar}または Rockafellar--Uryasev 変分表現を基準に用いる．
 Rockafellar and Uryasev \cite{rockafellar2000cvar} は
 \begin{equation}
-  \CVaR_\alpha(Z)=\max_{\eta\in\R}\left\{\eta-\frac1\alpha\E\left[(\eta-Z)^+\right]\right\}
+  \CVaR_\alpha(Z)=\max_{\eta\in\R}\left\{\eta-\frac1\alpha\E\left[\max(\eta-Z,\,0)\right]\right\}
 \end{equation}
-という変分表現を与え，CVaR最適化が凸計画に帰着することを示した（損失を正で扱う原論文と符号規約が逆である点に注意する）．ここで $\eta$ は閾値を表す補助変数であり，$\Finv(\alpha)$ はこの最大問題の最適解の一つである．連続分布では最適解は $\Finv(\alpha)$ として一意に定まるが，点質量を含む一般の分布では $F(\eta^-)\le\alpha\le F(\eta)$ を満たす $\eta$ 全体が最適解の閉区間をなし，一般化逆関数 $\Finv(\alpha)$ はその代表解を与える．また $(\eta-Z)^+=\max(\eta-Z,0)$ は正の部分（positive part）を表す．
+という変分表現を与え，CVaR最適化が凸計画に帰着することを示した（損失を正値として扱う原論文とは符号の定義が逆である点に注意する）．ここで $\eta$ は閾値を表す補助変数であり，$\Finv(\alpha)$ はこの最大問題の最適解の一つである．連続分布では最適解は $\Finv(\alpha)$ として一意に定まるが，点質量を含む一般の分布では $F(\eta^-)\le\alpha\le F(\eta)$（ここで $F(\eta^-)=\lim_{t\uparrow\eta}F(t)$ は左側極限）を満たす $\eta$ 全体が最適解の閉区間をなし，一般化逆関数 $\Finv(\alpha)$ はその代表解を与える．また $\max(\eta-Z,0)$ は正の部分を表す．
 式\eqref{eq:cvar}は歪み関数
 \begin{equation}
   g_\alpha(\tau)=\min\left(\tau/\alpha,\,1\right),\qquad
@@ -318,7 +318,7 @@ $Z$ の $g$ による歪み分布 $\dist Z$（または $\mathcal{D}_g[Z]$）を
 分位レベルの分布を $g$ により歪めて得られる分布を表す本稿の略記である．
 \end{definition}
 $\Prob(\Finv(U_g)\le z)=\Prob(U_g\le F(z))=g(F(z))$ であるから，$\dist Z$ の累積分布関数は $g\circ F_Z$ であり，
-適切な端点の取扱いの下で，その分位点関数はほとんど至る所
+適切な端点の取扱いの下で，その分位点関数はほとんど至る所で
 $F^{-1}_{\dist Z}(v)=\Finv(g^{-1}(v))$ と表せる．
 $Z$ が確率密度関数 $f$ をもつとき，$\dist Z$ の確率密度関数は $g'(F(z))f(z)$ となり，元の確率密度を重み $g'(F(z))$ で再重み付けした分布に他ならない．
 特に
