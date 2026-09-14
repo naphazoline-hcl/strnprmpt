@@ -1,12 +1,12 @@
 % ============================================================
-% slides_main_fixed_v4.tex  --  卒業研究 中間発表スライド（本番投影用）
+% slides_main.tex  --  卒業研究 中間発表スライド（本番投影用）
 % 歪み関数重み付き1-Wasserstein距離に基づくquantile fraction学習と
 % CVaR推定誤差の低減
 % ------------------------------------------------------------
-% 本番投影用の正式版．本編10枚のみで，QA/Appendix（A1〜A7）は含まない．
+% 本番投影用の正式版．本編10枚＋参考文献1枚（計11フレーム）で，QA/Appendix（A1〜A7）は含まない．
 % 文章は slides_script.md の口頭説明で補う前提で削っている．
 % 質疑応答は slides_qa.md ＋ 予備版 slides_concise.pdf（Appendix収録）を使用．
-% コンパイル: lualatex slides_main_fixed_v4.tex（2回実行）
+% コンパイル: lualatex slides_main.tex（または platex + dvipdfmx）
 % ============================================================
 \RequirePackage{iftex}
 \ifdefined\directlua
@@ -90,8 +90,8 @@
     リターン $Z^\pi(s,a)=\sum_{t\ge 0}\gamma^t R_t$ の期待値 $Q^\pi(s,a)=\E[Z^\pi(s,a)]$ を最大化する．
   \end{block}
   \begin{alertblock}{期待値最大化では制御できないもの}
-    破産・クラッシュのような\alert{稀な大損失}は期待値にほぼ寄与せず，
-    \alert{下側リスク}を評価・制御できない．
+    期待値は分布を単一の平均値に集約するため，破産やクラッシュのような
+    \alert{稀な大損失の頻度や深刻度}を個別には評価・制御できない．
   \end{alertblock}
   \begin{block}{分布型強化学習（Distributional RL）}
     $Z^\pi$ の\alert{分布そのもの}を学習．
@@ -104,7 +104,7 @@
 % ============================================================
 \begin{frame}{目標リスク尺度：CVaR}
   \begin{columns}[onlytextwidth, T]
-    \begin{column}{0.55\linewidth}
+    \begin{column}{0.53\linewidth}
       \begin{block}{定義：最悪 $\alpha$ の事象に条件付けた期待リターン}
         \small
         \[
@@ -117,17 +117,17 @@
         \]
       \end{block}
     \end{column}
-    \begin{column}{0.44\linewidth}
+    \begin{column}{0.45\linewidth}
       \centering
-      \begin{tikzpicture}[scale=0.74]
-        \draw[->] (-3.4,0) -- (3.4,0) node[below]{\footnotesize $z$};
+      \begin{tikzpicture}[scale=0.70]
+        \draw[->] (-3.3,0) -- (3.3,0) node[below]{\footnotesize $z$};
         \draw[->] (0,0) -- (0,1.55);
-        \fill[red!30] plot[domain=-3.2:-1.645, samples=40] (\x,{1.157*exp(-\x*\x/2)}) -- (-1.645,0) -- (-3.2,0) -- cycle;
-        \draw[thick, blue!70!black] plot[domain=-3.2:3.2, samples=80] (\x,{1.157*exp(-\x*\x/2)});
+        \fill[red!30] plot[domain=-3.1:-1.645, samples=40] (\x,{1.157*exp(-\x*\x/2)}) -- (-1.645,0) -- (-3.1,0) -- cycle;
+        \draw[thick, blue!70!black] plot[domain=-3.1:3.1, samples=80] (\x,{1.157*exp(-\x*\x/2)});
         \draw[dashed] (-1.645,0) -- (-1.645,0.48);
         \node[above right=-3pt] at (-1.645,0.38) {\footnotesize $\VaR_\alpha$};
         \node[red!70!black, below] at (-2.4,-0.02) {\footnotesize 確率 $\alpha$};
-        \node[red!70!black, align=left] at (-3.1, 1.25) {\footnotesize $\CVaR_\alpha$：赤い領域の\\[-2pt] \footnotesize 条件付き期待値};
+        \node[red!70!black, align=left, right] at (-3.3, 1.25) {\footnotesize $\CVaR_\alpha$：赤い領域に属する\\[-2pt] \footnotesize 損益の条件付き平均};
         \draw[->, red!70!black] (-2.2, 0.90) to[bend left=15] (-2.1, 0.22);
         \node[below] at (0,-0.35) {\footnotesize リターン分布の密度（概念図）};
       \end{tikzpicture}
@@ -244,9 +244,9 @@
       \midrule
       IQN (Dabney+, 2018) & サンプリング側（歪みサンプリング） & 確率的・非学習 & 対応しない \\
       Beyond CVaR (Moghimi \& Ku, 2025) & 値側（原子の重み付け） & 固定 & 値の重み付けのみ \\
-      Tail-Safe (Zhang, 2025) & 安全制約側 & 固定 & 対応しない \\
+      Tail-Safe (Zhang, 2025) & サンプリング傾斜＋安全制約 & 固定 & 対応しない \\
       FQF (Yang+, 2019) & 損失側（一様重み $W_1$） & \green{学習} & 一様 $W_1$ を最小化 \\
-      FQF-SRM (Gan+, 2026) & 評価時歪み（FPN損失は一様） & \green{学習} & 一様 $W_1$ を最小化 \\
+      FQF-SRM (Gan+, 2026; 省エネ応用) & 評価時歪み（FPN損失は一様） & \green{学習} & 一様 $W_1$ を最小化 \\
       \textbf{本研究} & \alert{損失側（歪み重み $\Lg$）} & \green{学習} & \alert{$\Lg$ を直接最小化} \\
       \bottomrule
     \end{tabular}
@@ -292,7 +292,7 @@
           \item $\alpha N\ge 2$ 最小改善比 \alert{$R=42.3$}（全分布 PASS）
           \item 下側裾集中：\alert{$13/15$}（一様は $0$）
           \item 歪み最適 $16$ 点 $\approx$ 一様 \alert{$695$ 点}（D1・$\alpha=0.05$）
-          \item 経験的傾き：M2 \alert{$-1.8$}（二次減衰），M0 $\alert{-0.72}$--$-1.27$（一次減衰）
+          \item 経験的傾き：M2 \alert{$-1.8$}（二次減衰），M0 $\alert{-0.72}$--$-1.27$（一次以下，$-2/3$ 乗まで劣化）
         \end{itemize}
         \par\vspace{1pt}{\scriptsize ※$N=16$・$\alpha=0.05$ は一様配置が単一分位点のみで CVaR を推定する特殊設定．}
       \end{exampleblock}
@@ -326,8 +326,8 @@
           \bottomrule
         \end{tabular}
         \begin{itemize}
-          \item FQF 比\alert{約 $1/7$}（$7.02\to0.96$），下側裾に\alert{$14.06$個}配置
-          \item B3g 固定配置（FPN凍結・理論配置）でも\alert{$0.74$} $\to$ toy での主因は\blue{理論配置の採用}
+          \item 方策依存 M-est で FQF 比\alert{約 $1/7$}（$7.02\to0.96$；共通参照約 $3$ 倍），下側裾に\alert{$14.06$個}配置
+          \item B3g 固定配置（FPN凍結・理論配置）でも\alert{$0.74$} $\to$ 小規模環境での主因は\blue{理論配置の採用}
           \item IQN（B2）が最良誤差，一般的優位性は未確認
         \end{itemize}
       \end{exampleblock}
@@ -344,17 +344,18 @@
 \begin{frame}{まとめと今後の展望}
   \begin{exampleblock}{達成事項}
     \begin{itemize}
-      \item \textbf{理論}：CVaR推定誤差の上界 $\Lg$ と，母集団設定の境界勾配（$g'(\tau_i)$ 倍）を導出し plug-in 実装
+      \item \textbf{理論}：CVaR推定誤差の上界 $\Lg$ と境界勾配（$g'(\tau_i)$ 倍）を導出し plug-in 実装
       \item \textbf{実験A}：$\alpha N\ge 2$ 最小改善比 \alert{$R=42.3$}（全分布 PASS），$16$ 点 $\approx$ 一様 $695$ 点（D1）
-      \item \textbf{実験B}：CVaR推定 MAE を FQF 比\alert{約 $1/7$} に低減，初期化改善（B1g）で理論配置達成
+      \item \textbf{実験B}：CVaR推定 MAE を FQF 比\alert{約 $1/7$}（共通参照約 $3$ 倍）に低減，理論配置達成
       \item \textbf{位置づけの明示}：IQN（B2）最良（$0.36$）・B3g も同程度（$0.74$）$\to$ 一般的優位性は未確認
     \end{itemize}
   \end{exampleblock}
+  \vspace{-2pt}
   \begin{block}{卒業研究の完成に向けた計画}
     \begin{itemize}
-      \item \blue{金融デルタヘッジ環境（実験C）}：日次リヘッジ＋取引コスト，ジャンプ拡散・確率的ボラティリティ拡張，IQN との定量比較
+      \item \blue{金融デルタヘッジ環境（実験C）}：日次リヘッジ＋取引コスト，確率的ボラティリティ拡張，IQN との比較
       \item \blue{理論の定理化}：収束レートの厳密化，有限サンプル誤差評価
-      \item \blue{実験Bの拡充}：シード $10$ 以上・bootstrap 信頼区間，\blue{方策評価モード}による交絡分離，B2p 公平変種，$\alpha$ 変更時の再利用性比較
+      \item \blue{実験Bの拡充}：シード $10$ 以上，\blue{方策評価モード}による交絡分離，B2p 公平変種
       \item \blue{時間整合性}：時間整合な CVaR 方策クラスとの組合せ
     \end{itemize}
   \end{block}
@@ -377,7 +378,7 @@
     \item S. Graf, H. Luschgy. \textit{Foundations of Quantization for Probability Distributions}. Lecture Notes in Mathematics 1730, Springer, 2000.
     \item R. T. Rockafellar, S. Uryasev. Optimization of Conditional Value-at-Risk. \textit{Journal of Risk}, 2(3), 21--41, 2000.
     \item A. Pichler. Evaluations of Risk Measures for Different Probability Measures. \textit{SIAM Journal on Optimization}, 23(1), 530--551, 2013.
-    \item G. Gan, N. Chen, Z. Wei, H. Qin, Y. Lu, H. Huang, Y. Huang. Energy-aware job scheduling for green data centers under uncertainty. \textit{Applied Energy}, 420: 128137, 2026.
+    \item G. Gan, N. Chen, Z. Wei, H. Qin, Y. Lu, H. Huang, Y. Huang. Energy-aware job scheduling for green data centers under uncertainty. \textit{Applied Energy}, 420: 128137, 2026（同論文中で FQF-SRM を提案）．
   \end{enumerate}
 \end{frame}
 
