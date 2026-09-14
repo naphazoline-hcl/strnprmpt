@@ -217,7 +217,7 @@
   \end{exampleblock}
   \begin{block}{数理的・実装的な含意}
     \begin{itemize}
-      \item FQF の勾配に\alert{$g'(\tau_i)$ を乗じるのみ}．ネットワーク構造の変更は不要．
+      \item 代表点を $g$-中央値にとり，勾配に\alert{$g'(\tau_i)$ を乗じるのみ}．ネットワーク構造の変更は不要．
             実装はネットワーク出力で $\Finv$ を置換した \blue{plug-in 擬似勾配（stop-gradient）}．
       \item 裾内 $g'(\tau_i)\approx(1-\lambda)/\alpha+\lambda$（$\alpha=0.05,\lambda=0.05$ で約 $19$ 倍），
             裾外 $\lambda$ $\Rightarrow$ 表現力が\blue{下側裾に集中して配分}される
@@ -531,8 +531,9 @@
 
 % ---------- A8 ----------
 \begin{frame}{A8. 参考文献}
-  \footnotesize
+  \scriptsize
   \begin{enumerate}
+    \setlength{\itemsep}{1pt}
     \item D. Yang, L. Zhao, Z. Lin, T. Qin, J. Bian, T.-Y. Liu.
           Fully Parameterized Quantile Function for Distributional Reinforcement Learning. \textit{NeurIPS}, 2019.
     \item W. Dabney, G. Ostrovski, D. Silver, R. Munos.
@@ -541,6 +542,8 @@
     \item J. Zhang. Tail-Safe Hedging. \textit{arXiv:2510.04555}, 2025.
     \item S. Graf, H. Luschgy. \textit{Foundations of Quantization for Probability Distributions}. Lecture Notes in Mathematics 1730, Springer, 2000.
     \item R. T. Rockafellar, S. Uryasev. Optimization of Conditional Value-at-Risk. \textit{Journal of Risk}, 2(3), 21--41, 2000.
+    \item A. Pichler. Evaluations of Risk Measures for Different Probability Measures. \textit{SIAM Journal on Optimization}, 23(1), 530--551, 2013.
+    \item G. Gan, N. Chen, Z. Wei, H. Qin, Y. Lu, H. Huang, Y. Huang. Energy-aware job scheduling for green data centers under uncertainty. \textit{Applied Energy}, 420: 128137, 2026.
   \end{enumerate}
 \end{frame}
 
