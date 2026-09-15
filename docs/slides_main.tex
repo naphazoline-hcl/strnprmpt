@@ -95,14 +95,14 @@
   \end{alertblock}
   \begin{block}{分布型強化学習（Distributional RL）}
     $Z^\pi$ の\alert{分布そのもの}を学習．
-    実装上は分位点関数 $\Finv(\tau)$（$\tau\in[0,1]$）を\blue{有限個 $N$ の原子}で近似する．
+    実装上は分位点関数 $\Finv(\tau)$（$\tau\in[0,1]$）を\blue{有限個 $N$ の原子}（アトム，atom）で近似する．
   \end{block}
 \end{frame}
 
 % ============================================================
 % 本編 3: CVaR と下側裾（口頭: slides_script.md §3）
 % ============================================================
-\begin{frame}{目標リスク尺度：CVaR}
+\begin{frame}{目標リスク尺度：条件付きバリューアットリスク（CVaR）}
   \begin{columns}[onlytextwidth, T]
     \begin{column}{0.53\linewidth}
       \begin{block}{定義：最悪 $\alpha$ の事象に条件付けた期待リターン}
@@ -147,7 +147,7 @@
     \begin{column}{0.58\linewidth}
       \begin{block}{FQF（Yang ら，2019 [1]）}
         quantile fraction（累積確率軸の区切り）$0=\tau_0<\tau_1<\dots<\tau_N=1$ を
-        FPN で学習し，原子 $\theta_i=\Finv(\hat\tau_i)$（$\hat\tau_i$：区間中点）で分布を表現．
+        FPN（Fraction Proposal Network）で学習し，原子 $\theta_i=\Finv(\hat\tau_i)$（$\hat\tau_i$ は区間中点）で分布を表現．
         \[
           \frac{\partial W_1}{\partial \tau_i}=2\Finv(\tau_i)-\Finv(\hat\tau_i)-\Finv(\hat\tau_{i-1}).
         \]

@@ -46,7 +46,7 @@ W_1=\int_0^1 \bigl|F^{-1}-\hat F^{-1}\bigr|\,d\tau
 \begin{equation}
 \rho_g(Z)=\int_0^1 F^{-1}\,dg(\tau)
 \end{equation}
-で表され，$\mathrm{CVaR}_\alpha$は$g(\tau)=\min(\tau/\alpha,1)$に対応する\cite{rockafellar}．一方，1次元分布を有限個の点で近似する最適量子化の理論\cite{graf}は，重み付き$W_1$を最小化する原子配置の存在と収束率を与える．
+で表され，$\mathrm{CVaR}_\alpha$\cite{rockafellar}は$g(\tau)=\min(\tau/\alpha,1)$に対応する．一方，1次元分布を有限個の点で近似する最適量子化の理論\cite{graf}は，重み付き$W_1$を最小化する原子配置の存在と収束率を与える．
 
 先行研究として，IQN\cite{iqn}は歪みリスク尺度を$\tau$の再エンコードとして扱うのみで，分位点の配置は学習しない．Beyond CVaR\cite{beyondcvar}はスペクトルリスク尺度の重みを分位点の値に作用させるが，quantile fractionは一様に固定されている．Tail-Safe\cite{tailsafe}は$\tau$のサンプリングを下側裾へヒューリスティックに傾斜させる．調査した範囲では，損失側でquantile fractionの配置をリスク尺度に対して最適化する定式化は確認できなかった．
 
@@ -55,7 +55,7 @@ W_1=\int_0^1 \bigl|F^{-1}-\hat F^{-1}\bigr|\,d\tau
 \begin{equation}\small\begin{gathered}
 |\rho_g(Z)-\rho_g(\hat Z)|\le\!\!\int_0^1\!|F^{-1}-\hat F^{-1}|g'(\tau)d\tau=W_1(\mathcal{D}_g Z,\mathcal{D}_g\hat Z)
 \end{gathered}\normalsize\label{eq:bound}\end{equation}
-と上から抑えられるため，この量 $L_g$ を直接最小化することで，歪み重みに整合したCVaR推定誤差の低減を目指す．
+と上から抑えられるため，この上界 $L_g := W_1(\mathcal{D}_g Z,\mathcal{D}_g\hat Z)$ を直接最小化することで，歪み重みに整合したCVaR推定誤差の低減を目指す．
 
 \section{研究方針}
 理論面では，歪み重み付き損失$L_g$のquantile fractionに関する勾配の閉形式を導出する．代表点を $g$-中央値 $\hat\tau_i$（$g(\hat\tau_i)=\{g(\tau_i)+g(\tau_{i+1})\}/2$）にとることで，
@@ -67,11 +67,11 @@ W_1=\int_0^1 \bigl|F^{-1}-\hat F^{-1}\bigr|\,d\tau
 \section{現在までの進捗}
 文献調査を実施し，前節の先行研究のいずれにも損失側でのquantile fraction最適化が存在しないことを確認した．
 
-実験A（1次元量子化デモ）では，ガウス混合$0.9N(0,1)+0.1N(-4,1)$，負の対数正規，$t$分布（$\nu=3$）の3分布に対し，$N\in\{8,\dots,256\}$（収束レート等は $N\le1024$ まで拡張測定），$\alpha\in\{0.01,0.05,0.1\}$の条件で，一様配置（M0），$g$-一様配置（M1），歪み最適配置（M2）のCVaR推定誤差を比較した．$\alpha N\ge 2$ 領域における最小改善比 $R=42.3$ を達成し，代表例 $\alpha=0.05, N=16$（一様配置のCVaR推定が単一分位点$\hat F^{-1}(1/32)$のみで行われる特殊設定）ではガウス混合で$R=97.9$，負の対数正規で$R=52.4$，$t$分布で$R=39.6$となり，判定基準$R\ge 2$を満たした．歪み最適配置は15個の内部quantile fractionのうち13個を下側裾$[0,\alpha]$に配置し（一様は0個），点数換算値（N-equivalence）では歪み最適16点が一様695点に相当する（D1・$\alpha=0.05$での補間値；D2・D3は探索上限の1024点でも未達）．log-log傾きは歪み最適配置（M2）で$-1.79$--$-1.84$，一様配置（M0）で$-0.72$--$-1.27$（$\alpha=0.05$，$N=8$--$1024$ 併合）であり，M2は二次減衰に，M0は一次以下（ヘビーテイルでは$-2/3$乗まで劣化）におおむね整合する（機序は下側裾の適応配置による端点特異性の回避．漸近次数の一般的証明は今後の課題）．改善比$R$は$N$とともに増大する（$N=1024$で$10^3$を超える）．図\ref{fig:demo}に$N$に対する誤差収束を示す．
+実験A（1次元量子化デモ）では，ガウス混合$0.9N(0,1)+0.1N(-4,1)$，負の対数正規，自由度 $\nu=3$ の $t$分布の3分布に対し，$N\in\{8,\dots,256\}$（収束レート等は $N\le1024$ まで拡張測定），$\alpha\in\{0.01,0.05,0.1\}$の条件で，一様配置（M0），$g$-一様配置（M1），歪み最適配置（M2）のCVaR推定誤差を比較した．$\alpha N\ge 2$ 領域における最小改善比 $R=42.3$ を達成し，代表例 $\alpha=0.05, N=16$（一様配置のCVaR推定が単一分位点$\hat F^{-1}(1/32)$のみで行われる特殊設定）ではガウス混合で$R=97.9$，負の対数正規で$R=52.4$，$t$分布で$R=39.6$となり，判定基準$R\ge 2$を満たした．歪み最適配置は15個の内部quantile fractionのうち13個を下側裾$[0,\alpha]$に配置し（一様は0個），点数換算値（N-equivalence）では歪み最適16点が一様695点に相当する（D1・$\alpha=0.05$での補間値；D2・D3は探索上限の1024点でも未達）．log-log傾きは歪み最適配置（M2）で$-1.79$--$-1.84$，一様配置（M0）で$-0.72$--$-1.27$（$\alpha=0.05$，$N=8$--$1024$ 併合）であり，M2は二次減衰に，M0は一次以下（ヘビーテイルでは$-2/3$乗まで劣化）におおむね整合する（機序は下側裾の適応配置による端点特異性の回避．漸近次数の一般的証明は今後の課題）．改善比$R$は$N$とともに増大する（$N=1024$で$10^3$を超える）．図\ref{fig:demo}に$N$に対する誤差収束を示す．
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.64\columnwidth]{fig2_demo.png}
+\includegraphics[width=0.58\columnwidth]{fig2_demo.png}
 \caption{実験Aにおける原子数$N$に対するCVaR推定誤差のlog-log収束（行は$\alpha\in\{0.01,0.05,0.1\}$，列は3分布，本文中の数値は$\alpha=0.05$）．歪み最適配置（M2）は一様配置（M0）より一貫して小さい誤差を示す．}
 \label{fig:demo}
 \end{figure}
@@ -83,7 +83,7 @@ W_1=\int_0^1 \bigl|F^{-1}-\hat F^{-1}\bigr|\,d\tau
 
 \begin{thebibliography}{9}
 \scriptsize
-\setlength{\itemsep}{-3.5pt}
+\setlength{\itemsep}{0pt}
 \setlength{\parskip}{0pt}
 \bibitem{fqf} D. Yang ほか. Fully Parameterized Quantile Function for Distributional Reinforcement Learning. NeurIPS 2019.
 \bibitem{iqn} W. Dabney ほか. Implicit Quantile Networks for Distributional Reinforcement Learning. ICML 2018.
