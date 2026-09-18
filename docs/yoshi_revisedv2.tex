@@ -73,7 +73,7 @@
 \frac{\partial L_g}{\partial\tau_i} = g'(\tau_i)\bigl[2F^{-1}(\tau_i)-F^{-1}(\hat\tau_i)-F^{-1}(\hat\tau_{i-1})\bigr]
 \end{equation}
 となる．これは従来のFQFの勾配式に $g'(\tau_i)$ を乗じた閉形式である．RL実装では各 $F^{-1}$ を分位点値ネットワークの出力で評価し，定数扱いとして quantile fraction のみを更新する形で安定的に学習できる．
-なお $\tau>\alpha$ での勾配消失を防ぐため，正則化歪み $g_{\alpha,\lambda}(\tau)=(1-\lambda)g_\alpha(\tau)+\lambda\tau$（$\lambda=0.05$）で更新した（評価は純粋な $g_\alpha$ で行う．両者の誤差上界の差は係数約1.05倍）．
+なお $\tau>\alpha$ での勾配消失を防ぐため，正則化歪み $g_{\alpha,\lambda}(\tau)=(1-\lambda)g_\alpha(\tau)+\lambda\tau$（$\lambda=0.05$）で更新した（評価は純粋な $g_\alpha$ で行う．純粋 $\CVaR$ との誤差上界の差は係数約1.05倍）．
 
 \section{現在までの進展}
 \vspace{-2pt}
