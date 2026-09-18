@@ -57,7 +57,7 @@
 
 歪み関数 $g$ を用いた歪みリスク尺度は，分位点関数の重み付き積分 $\rho_g(Z) = \int_0^1 F^{-1}(\tau)\,dg(\tau)$ で表され，$\CVaR_\alpha$ は $g_\alpha(\tau)=\min(\tau/\alpha,1)$ の場合に対応する．確率分布を有限個の代表点で近似する最適量子化理論（Graf and Luschgy \cite{graf}）によれば，重みに応じて原子を最適配置することで推定精度の向上が見込める．
 
-しかし既存手法では，IQN \cite{iqn} は行動選択時のサンプリング歪みのみで原子配置を学習せず，Ganらの手法（FQF-SRM）\cite{fqfsrm} や Beyond CVaR \cite{beyondcvar} もリスク尺度を行動選択側に用いるにとどまる．いずれもFPN損失を歪み重み付き$W_1$へ置換して配置最適化するものではない．調査した限り，歪みリスク尺度に応じて quantile fraction配置自体を学習する定式化は確認できていない．
+しかし既存手法では，IQN \cite{iqn} は行動選択時のサンプリング歪みのみで原子配置を学習せず，Ganらの手法（FQF-SRM）\cite{fqfsrm} は行動選択側，Beyond CVaR \cite{beyondcvar} は方策側の最適化にとどまる．いずれもFPN損失を歪み重み付き$W_1$へ置換して配置最適化するものではない．調査した限り，歪みリスク尺度に応じて quantile fraction配置自体を学習する定式化は確認できていない．
 
 \section{研究目的}
 本研究の目的は，FPNの目的関数を一様重みの $W_1$ から歪み関数重み付き $W_1$ へと置換し，歪み分布 $\mathcal{D}_g Z$（累積分布を $g$ で変換した分布）の1次元最適量子化理論に基づき quantile fraction を学習する手法を確立することである．歪みリスク尺度の推定誤差は既知のLipschitz評価 \cite{pichler2013} により上界 $L_g := W_1(\mathcal{D}_g Z,\mathcal{D}_g\hat Z)$ で抑えられる．
@@ -87,7 +87,7 @@
 \vspace{1pt}
 \includegraphics[width=\columnwidth]{fig2_placement_crop.png}
 \vspace{1pt}
-\caption{D1（$N=16,\alpha=0.05$）での配置比較．縦線は quantile fraction $\tau_i$，丸は代表点（$g$-中央値）$\hat\tau_i$（右は分位点値），網掛けは下側裾 $[0,\alpha]$．M0は一様配置，M1は$g$-一様配置，M2は提案の歪み最適配置を示す．}
+\caption{D1（$N=16,\alpha=0.05$）での配置比較．縦線は quantile fraction $\tau_i$，丸は各区間の代表点 $\hat\tau_i$（右は分位点値），網掛けは下側裾 $[0,\alpha]$．M0は一様配置，M1は$g$-一様配置，M2は提案の歪み最適配置を示す．}
 \label{fig:placement}
 \vspace{-1pt}
 \end{figure}
