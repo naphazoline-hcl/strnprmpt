@@ -84,12 +84,12 @@
 
 \begin{figure}[htbp]
 \centering
-\vspace{-5pt}
-\includegraphics[width=0.62\columnwidth]{fig2_placement_crop.png}
-\vspace{-4pt}
-\caption{D1（ガウス混合，$N=16,\alpha=0.05$）の配置比較．縦線は quantile fraction $\tau_i$，丸は代表点 $\hat\tau_i$（右は対応する分位点値），網掛けは下側裾 $[0,\alpha]$．一様配置（M0）は裾内0点，M1（$g$-一様）は裾等間隔の対照，提案法（M2）は15点中13点を下側裾に集中配置する．}
+\vspace{1pt}
+\includegraphics[width=\columnwidth]{fig2_placement_crop.png}
+\vspace{1pt}
+\caption{D1（ガウス混合，$N=16,\alpha=0.05$）における配置比較．縦線は quantile fraction $\tau_i$，丸は代表点 $\hat\tau_i$（右は対応する収益分位点値），網掛けは下側裾 $[0,\alpha]$．M0は一様配置，M1は裾内等分割配置，M2は提案の歪み最適配置を示す．}
 \label{fig:placement}
-\vspace{-6pt}
+\vspace{-1pt}
 \end{figure}
 
 図\ref{fig:placement}に示すように，提案法M2では15点中13点が下側裾に集中し，代表設定（$\alpha=0.05, N=16$）における推定誤差改善比 $R = e_{\mathrm{M0}}/e_{\mathrm{M2}}$ は3分布すべてで $R\ge 39.6$（最大97.9）となった．例えばD1ではM2の16点と同等の精度を一様配置で得るには約695点を要し（D2，D3は探索上限1024点でも未達），高い点数効率を示した．
@@ -103,13 +103,11 @@
 
 表\ref{tab:expB}に結果を示す．従来FQF（B0）は一様重み $W_1$ で学習するが，下側裾内の内部 quantile fraction が0点となり高リスク方策（経験CVaR $-10.79$）に収束した．目的関数のみ置換したB1（標準初期化）では，初期出力の一様性で裾外（$\tau>0.05$）の勾配重み $g'(\tau_i)$ が微弱となり，一部シードで局所解にとどまった．これに対し初期バイアスを調整し初期配置を下側裾へ寄せた提案法B1g（裾初期化）では，勾配が有効に作用し下側裾へ quantile fraction が集中配分（15点中平均14.06点）された．推定MAEは $7.02\to0.96$（約86\%低減）となり，リスク回避方策（経験CVaR $0.70$）を獲得した．獲得方策による分布難易度差も交絡するが，全時刻でSAFEを選択する参照方策（all-SAFE）下でも $1.88\to0.59$（約69\%低減）となった．
 
-\newpage
-
 \begin{table}[t]
 \centering
 \vspace{-2pt}
 \setlength{\tabcolsep}{2.5pt}
-\caption{実験Bの性能比較（3シード平均$\pm$SD）．推定MAEは獲得方策下の$\CVaR_{0.05}$推定誤差，経験CVaRは5,000エピソードの実収益から計算．裾点数は15個の内部 quantile fraction中$[0,\alpha]$に入る数（IQNは連続サンプリングのため---）．}
+\caption{実験Bの性能比較（3シード平均$\pm$SD）．推定MAEは獲得方策下の$\CVaR_{0.05}$推定誤差，経験CVaRは5,000エピソードの実収益．裾点数は15個の内部 quantile fraction中$[0,\alpha]$に入る数（IQNは連続サンプリングのため---）．}
 \label{tab:expB}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
@@ -137,15 +135,15 @@ B3g 歪みFQF（裾固定） & $0.74\pm0.33$ & $0.30\pm0.83$ & $15.00\pm0.00$\\
 \setlength{\itemsep}{-1pt}
 \setlength{\parskip}{0pt}
 \setlength{\parsep}{0pt}
-\item \textbf{金融環境での実証（実験C）}：裾形状が動的変化する環境でFPNの状態適応性が固定配置を上回ることを実証する．
-\item \textbf{収束特性の定理化}：適応格子による端点特異性の緩和を理論評価し，改善比の下界 $\Omega(1/\alpha)$ の証明を目指す．
-\item \textbf{共通方策下の公平比較}：プロトコル統一によりFPNの状態適応性と下側裾集中配置の寄与を分離評価する．
+\item \textbf{金融環境での実証（実験C）}：動的環境でFPNの状態適応性が固定配置を上回ることを実証する．
+\item \textbf{収束特性の定理化}：適応格子の端点特異性緩和を理論評価し，改善比下界 $\Omega(1/\alpha)$ の証明を目指す．
+\item \textbf{共通方策下の公平比較}：評価プロトコル統一により状態適応性と下側裾集中配置の寄与を分離評価する．
 \end{enumerate}
 \vspace{-2pt}
 
 \begin{thebibliography}{9}
-\scriptsize
-\setlength{\itemsep}{-0.5pt}
+\fontsize{6pt}{7.2pt}\selectfont
+\setlength{\itemsep}{-0.8pt}
 \setlength{\parskip}{0pt}
 \bibitem{rockafellar} R. T. Rockafellar, S. Uryasev. Optimization of Conditional Value-at-Risk. Journal of Risk, 2(3):21--41, 2000.
 \bibitem{iqn} W. Dabney et al. Implicit Quantile Networks for Distributional Reinforcement Learning. ICML, 2018.
