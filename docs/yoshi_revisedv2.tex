@@ -1,4 +1,4 @@
-﻿% yoshi_revisedv2.tex --- MIプログラム 中間発表予稿（A4・2段組・2ページ）
+% yoshi_revisedv2.tex --- MIプログラム 中間発表予稿（A4・2段組・2ページ）
 % コンパイル: platex yoshi_revisedv2.tex ; dvipdfmx yoshi_revisedv2.dvi
 \documentclass[a4paper,twocolumn,10pt]{jsarticle}
 \usepackage{amsmath,amssymb}
@@ -76,26 +76,30 @@
 なお $\tau>\alpha$ での勾配消失を防ぐため，正則化歪み $g_{\alpha,\lambda}(\tau)=(1-\lambda)g_\alpha(\tau)+\lambda\tau$（$\lambda=0.05$）で更新した（評価は純粋な $g_\alpha$ で行う．両者の誤差上界の差は係数約1.05倍）．
 
 \section{現在までの進展}
+\vspace{-2pt}
 
 \subsection{実験A\quad 真値参照の1次元最適量子化}
+\vspace{-1pt}
 真の分位点関数が既知の設定で，配置方針（一様配置M0，$g$-一様配置M1，提案の歪み最適配置M2）によるCVaR推定誤差を比較した．対象分布は，ガウス混合 $0.9\mathcal{N}(0,1)+0.1\mathcal{N}(-4,1)$（D1），負の対数正規（D2），自由度 $\nu=3$ の $t$分布（D3）の3分布（$N\in\{8, 16, 32, 64, 128, 256\}$，$\alpha\in\{0.01, 0.05, 0.1\}$）である．
 
 \begin{figure}[htbp]
 \centering
-\vspace{-3pt}
-\includegraphics[width=0.72\columnwidth]{fig2_placement_crop.png}
-\vspace{-3pt}
-\caption{D1（ガウス混合，$N=16,\alpha=0.05$）の配置比較．縦線は quantile fraction $\tau_i$，丸は代表点 $\hat\tau_i$（右は分位点値），網掛けは裾 $[0,\alpha]$．M0は裾内0点，M1（$g$-一様）は裾等間隔の対照，提案法M2は15点中13点を下側裾に自律集中配置．}
-\label{fig:placement}
+\vspace{-5pt}
+\includegraphics[width=0.62\columnwidth]{fig2_placement_crop.png}
 \vspace{-4pt}
+\caption{D1（ガウス混合，$N=16,\alpha=0.05$）の配置比較．縦線は quantile fraction $\tau_i$，丸は代表点 $\hat\tau_i$（右は対応する分位点値），網掛けは下側裾 $[0,\alpha]$．一様配置（M0）は裾内0点，M1（$g$-一様）は裾等間隔の対照，提案法（M2）は15点中13点を下側裾に集中配置する．}
+\label{fig:placement}
+\vspace{-6pt}
 \end{figure}
 
-図\ref{fig:placement}に示すように，提案法M2は15点中13点を下側裾に集中させ，代表設定（$\alpha=0.05, N=16$）における誤差改善比 $R = e_{\mathrm{M0}}/e_{\mathrm{M2}}$ は全分布で $R\ge 39.6$（最大97.9）に達した．D1ではM2の16点と同等精度に一様配置で約695点を要し，高い点数効率を示した．
+図\ref{fig:placement}に示すように，提案法M2では15点中13点が下側裾に集中し，代表設定（$\alpha=0.05, N=16$）における推定誤差改善比 $R = e_{\mathrm{M0}}/e_{\mathrm{M2}}$ は3分布すべてで $R\ge 39.6$（最大97.9）となった．例えばD1ではM2の16点と同等の精度を一様配置で得るには約695点を要し（D2，D3は探索上限1024点でも未達），高い点数効率を示した．
 
-収束次数においても，一様配置M0の傾きは $-0.72$〜$-1.27$ と一次精度 $O(N^{-1})$ にとどまり，ヘビーテイルのD3では端点特異性（$\tau\to0$ での $F^{-1}$ 発散）により $-0.72$ まで悪化する．一方，提案法M2は特異性を抑え，傾き $-1.79$〜$-1.84$ と二次精度 $O(N^{-2})$ に近い挙動を示した．
+収束次数においても，一様配置M0の傾きは $-0.72$〜$-1.27$ と一次精度 $O(N^{-1})$ 程度にとどまり，ヘビーテイルのD3では端点特異性（$\tau\to0$ での $F^{-1}$ の発散）により $-0.72$ まで悪化した．一方，提案法M2は端点特異性を抑えることで，傾き $-1.79$〜$-1.84$ と二次精度 $O(N^{-2})$ に近い挙動を示した．
 
+\vspace{-2pt}
 \subsection{実験B\quad 強化学習環境における検証}
-安全なSAFE行動と稀に極端損失（$t$分布）が生じる高期待値RISKY行動を選ぶ有限ホライズン（$H=10$）環境RiskyChain-v0（55状態$\times$2行動，$\gamma=1$）を構築し，$\CVaR_{0.05}$ 最大化エージェントを100kステップ・3シードで学習した．
+\vspace{-1pt}
+安全なSAFE行動と，稀に極端な損失（$t$分布）が生じる高期待値RISKY行動を選ぶ有限ホライズン（$H=10$）環境RiskyChain-v0（55状態$\times$2行動，$\gamma=1$）を構築し，$\CVaR_{0.05}$ を最大化するエージェントを100kステップ・3シードで学習した．
 
 表\ref{tab:expB}に結果を示す．従来FQF（B0）は一様重み $W_1$ で学習するが，下側裾内の内部 quantile fraction が0点となり高リスク方策（経験CVaR $-10.79$）に収束した．目的関数のみ置換したB1（標準初期化）では，初期出力の一様性で裾外（$\tau>0.05$）の勾配重み $g'(\tau_i)$ が微弱となり，一部シードで局所解にとどまった．これに対し初期バイアスを調整し初期配置を下側裾へ寄せた提案法B1g（裾初期化）では，勾配が有効に作用し下側裾へ quantile fraction が集中配分（15点中平均14.06点）された．推定MAEは $7.02\to0.96$（約86\%低減）となり，リスク回避方策（経験CVaR $0.70$）を獲得した．獲得方策による分布難易度差も交絡するが，全時刻でSAFEを選択する参照方策（all-SAFE）下でも $1.88\to0.59$（約69\%低減）となった．
 
