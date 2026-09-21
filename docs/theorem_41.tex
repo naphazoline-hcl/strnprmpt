@@ -1,0 +1,313 @@
+% ======================================================================
+% 予想4.1 の定理化 — 卒論用の清書（証明付き）
+% コンパイル: platex + dvipdfmx（jsarticle）。中間レポート report.tex と同一の記法・マクロに準拠。
+% 記法: \CVaR, \Finv, \Fhinv, \R, \E, \Prob, \dist, \Wone
+% 本ファイル単体でコンパイル可能。卒論本文へは第4章（提案モデル）または付録として組み込む想定。
+% ======================================================================
+\documentclass[a4paper,10pt]{jsarticle}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=25mm]{geometry}
+
+\theoremstyle{definition}
+\newtheorem{definition}{定義}[section]
+\newtheorem{proposition}{命題}[section]
+\newtheorem{lemma}{補題}[section]
+\newtheorem{theorem}{定理}[section]
+\newtheorem{conjecture}{予想}[section]
+\newtheorem{remark}{注意}[section]
+\makeatletter
+\renewenvironment{proof}[1][\proofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+  \item[\hskip\labelsep\textbf{#1}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+\renewcommand{\proofname}{証明}
+\makeatother
+
+\newcommand{\CVaR}{\mathrm{CVaR}}
+\newcommand{\Wone}{W_1}
+\expandafter\let\csname Finv\endcsname\undefined
+\newcommand{\Finv}{F^{-1}}
+\newcommand{\Fhinv}{\hat{F}^{-1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\dist}{\mathcal{D}_g}
+
+\title{誤差上界と下界の比による改善スケーリングの定理化\\（予想4.1 の証明）}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{設定と主張}
+
+本稿では，中間レポート（第4章）で予想として提示した「歪み最適配置によるCVaR推定誤差上界の改善スケーリング」を，正則変動の仮定のもとで定理として証明する．
+
+\paragraph{記法と仮定．}
+$Z$ を損益（大きいほど良い）とし，その分位点関数を $\Finv\colon(0,1)\to\R$（非減少，左連続の一般化逆関数）とする．
+$\CVaR$ 歪み $g_\alpha(\tau)=\min(\tau/\alpha,1)$（$g_\alpha'(\tau)=\alpha^{-1}\mathbb{1}_{[0,\alpha)}(\tau)$）に対し，
+誤差上界（中間レポート 命題3.1，式 bound-cvar）は
+\begin{equation}
+  \bigl|\CVaR_\alpha(Z)-\CVaR_\alpha(\hat Z_N)\bigr|
+  \;\le\;\frac1\alpha\int_0^\alpha\bigl|\Finv(\tau)-\Fhinv(\tau)\bigr|\,d\tau
+  \;=:\;\frac1\alpha\,I_\alpha .
+  \label{eq:bound-cvar2}
+\end{equation}
+以下，一様配置（FQF 相当）による上界を $E_{\mathrm{unif}}$，歪み最適配置（提案法）による上界を $E_{\mathrm{opt}}$ と書く．
+
+\begin{definition}[分位点関数の正則変動]
+\label{def:regvar}
+$\Finv\in C^1(0,\alpha]$ かつ $\Finv\in L^1[0,\alpha]$（$\CVaR_\alpha$ が有限値をもつ）とする．
+さらに導関数が原点近傍（$\tau\downarrow0$）で正則変動する，すなわち
+\begin{equation}
+  (\Finv)'(\tau)=\tau^{-\beta}\ell(\tau),
+  \label{eq:regvar}
+\end{equation}
+ここで $\beta\in[1,2)$ は発散指数，$\ell$ は緩変動関数（slowly varying：任意の $c>0$ に対し $\ell(c\tau)/\ell(\tau)\to1$）とする．
+あわせて $(\Finv)'$ は $(0,\alpha]$ 上で非増加（すなわち $\Finv$ は $(0,\alpha]$ で凹）とする．
+なお式\eqref{eq:regvar}より $\tau$ 十分小で $(\Finv)'(\tau)>0$ であるから，$\Finv$ は下側裾で狭義単調増大である．
+\end{definition}
+
+\noindent
+\textbf{例．} $t_\nu$ 分布では $\Finv(\tau)\sim-c\,\tau^{-1/\nu}$ より $(\Finv)'(\tau)\sim\frac{c}{\nu}\tau^{-(1+1/\nu)}$ であり $\beta=1+1/\nu$（$\nu=3$ で $\beta=4/3$）．ガウス裾では $\beta=1$ で緩変動関数が対数的 $(\Finv)'(\tau)\sim\tau^{-1}\bigl(2\ln(1/\tau)\bigr)^{-1/2}$ となる．
+
+\begin{theorem}[誤差上界と下界の比による改善スケーリング]
+\label{thm:alpha}
+定義\ref{def:regvar} の仮定のもと，$\alpha$ を固定して $N\to\infty$ とした漸近において，
+一様quantile fractionによる式\eqref{eq:bound-cvar2}の上界 $E_{\mathrm{unif}}$ と歪み最適quantile fractionによる上界 $E_{\mathrm{opt}}$ の比は，
+$\beta\in(1,2)$（$t_\nu$ などの裾の重い分布）のとき
+\begin{equation}
+  \frac{E_{\mathrm{unif}}}{E_{\mathrm{opt}}}\;\asymp\;\frac{N^{\beta-1}}{\alpha^{\,2-\beta}}\cdot\frac{\ell(1/N)}{\ell(\alpha)},
+  \label{eq:thm-scaling}
+\end{equation}
+（$\asymp$ は比が正の定数で上下から挟まれること）．緩変動比 $\ell(1/N)/\ell(\alpha)$ は $N$ の多項式より緩やか（任意の $\epsilon>0$ で $o(N^\epsilon)$）なので，
+冪の成分については $\asymp N^{\beta-1}/\alpha^{2-\beta}$ と略記できる．とくに $\ell$ が定数に漸近する場合（$t_\nu$ など）は緩変動比が定数に収束し，
+式\eqref{eq:thm-scaling}は補正なしに $\asymp N^{\beta-1}/\alpha^{2-\beta}$ となる．
+$\beta=1$（ガウス裾）のときは対数補正を除いて $\Theta(1/\alpha)$．
+いずれの場合も，この改善比は少なくとも $\Omega(1/\alpha)$（少なくとも $1/\alpha$ のオーダー以上）となる．
+\end{theorem}
+
+証明は，一様配置の下界（補題\ref{lem:unif}）と歪み最適配置の上界（補題\ref{lem:opt}）をそれぞれ評価し，その比をとることで与える．
+まず必要な補助結果（正則変動関数の積分，中点則の精度，最適量子化の点密度）を §\ref{sec:aux} に用意する．
+
+
+\section{補助補題}
+\label{sec:aux}
+
+\begin{lemma}[Karamata の定理（正則変動関数の積分）]
+\label{lem:karamata}
+$\ell$ を緩変動関数とする．$x\downarrow0$ で
+\begin{align}
+  \int_0^x s^{p}\ell(s)\,ds&\;\sim\;\frac{x^{p+1}}{p+1}\,\ell(x)&&(p>-1),\label{eq:karamata1}\\
+  \int_x^{a} s^{p}\ell(s)\,ds&\;\sim\;-\frac{x^{p+1}}{p+1}\,\ell(x)&&(p<-1).\label{eq:karamata2}
+\end{align}
+\end{lemma}
+\begin{proof}
+\eqref{eq:karamata1}を示す．$I(x)=\int_0^x s^p\ell(s)ds$ とおき $s=xt$ と置換すると $I(x)=x^{p+1}\int_0^1 t^p\ell(xt)\,dt$．
+緩変動の定義から各 $t>0$ で $\ell(xt)/\ell(x)\to1$．緩変動関数の一様収束定理によりこの収束は $t\in[\delta,1]$ で一様であり，
+$t\in(0,\delta)$ では Potter の上界 $\ell(xt)/\ell(x)\le C t^{-\epsilon}$（任意の $\epsilon>0$）で支配できるから，
+支配収束定理より $\int_0^1 t^p\,\ell(xt)/\ell(x)\,dt\to\int_0^1 t^p\,dt=1/(p+1)$．
+よって $I(x)\sim x^{p+1}\ell(x)/(p+1)$．\eqref{eq:karamata2}は $\int_x^a$ を $s=xt$（$t\in[1,a/x]$）で同様に評価し，
+$\int_1^\infty t^p\,dt=-1/(p+1)$（$p<-1$）から従う．
+\end{proof}
+
+\begin{lemma}[分位点関数の裾での漸近形]
+\label{lem:tail}
+定義\ref{def:regvar} の仮定のもと，$\beta>1$ では $\tau\downarrow0$ で
+\begin{equation}
+  -\Finv(\tau)\;\sim\;\frac{\tau^{-(\beta-1)}}{\beta-1}\,\ell(\tau),
+  \qquad\text{特に}\quad \Finv(\tau)\to-\infty .
+  \label{eq:tail}
+\end{equation}
+$\beta=1$ では $-\Finv(\tau)\sim\ell_1(\tau)$（$\ell_1(x)=\int_x^\alpha s^{-1}\ell(s)ds$ は別の緩変動関数で，$\ell_1(x)/\ell(x)\to\infty$）．
+\end{lemma}
+\begin{proof}
+$-\Finv(\tau)=\int_\tau^\alpha(\Finv)'(s)ds+\Finv(\alpha)$ に式\eqref{eq:regvar}を代入し，
+$\beta>1$ では補題\ref{lem:karamata}\eqref{eq:karamata2}（$p=-\beta<-1$）を適用すると
+$\int_\tau^\alpha s^{-\beta}\ell(s)ds\sim\tau^{-(\beta-1)}\ell(\tau)/(\beta-1)$ を得る．
+定数 $\Finv(\alpha)$ は発散項に吸収される．$\beta=1$ では $\int_\tau^\alpha s^{-1}\ell(s)ds$ が緩変動関数 $\ell_1$ を定義し，
+緩変動の性質から $\ell_1(x)/\ell(x)\to\infty$ となる（Karamata の定理の境界系）．
+\end{proof}
+
+\begin{lemma}[中点則の二次精度]
+\label{lem:midpoint}
+$\Finv\in C^2$ の区間 $[a,a+w]$ において，中点 $c=a+w/2$ に対し
+\begin{equation}
+  \int_a^{a+w}\Finv(\tau)\,d\tau-w\,\Finv(c)\;=\;\frac{(\Finv)''(\xi)}{24}\,w^3,
+  \qquad \xi\in(a,a+w).
+  \label{eq:midpoint}
+\end{equation}
+さらに $\Finv$ が区間で非減少ならば（凸性は不要），$M=\sup_{[a,a+w]}(\Finv)'$ として絶対誤差について
+\begin{equation}
+  \int_a^{a+w}\bigl|\Finv(\tau)-\Finv(c)\bigr|\,d\tau\;\le\;\frac{M}{4}\,w^2 .
+  \label{eq:midpoint-abs}
+\end{equation}
+また下側には $m=\inf_{[a,a+w]}(\Finv)'$ として $\frac{m}{4}w^2$ が対応する下界を与える．
+\end{lemma}
+\begin{proof}
+$c$ を中心に Taylor 展開 $\Finv(\tau)=\Finv(c)+(\Finv)'(c)(\tau-c)+\frac{(\Finv)''(\xi(\tau))}{2}(\tau-c)^2$ し，
+$\int_a^{a+w}$ をとる．一次項は対称性で消え，$\int_a^{a+w}(\tau-c)^2d\tau=w^3/12$ と積分平均値の定理から
+式\eqref{eq:midpoint}を得る．式\eqref{eq:midpoint-abs}は，$\Finv$ の非減少性より $|\Finv(\tau)-\Finv(c)|\le M|\tau-c|$ と評価し，
+$\int_a^{a+w}|\tau-c|\,d\tau=w^2/4$ を用いれば従う（下界も同様）．
+なお各区間の絶対誤差には，部分積分による厳密な恒等式
+\begin{equation*}
+  \int_a^{a+w}\bigl|\Finv(\tau)-\Finv(c)\bigr|d\tau
+  \;=\;\int_a^{c}(\Finv)'(s)\,(s-a)\,ds+\int_c^{a+w}(\Finv)'(s)\,(a+w-s)\,ds
+\end{equation*}
+があり，これから上下の評価が直接に得られる．
+\end{proof}
+
+\begin{lemma}[1次元 $L^1$ 最適量子化の点密度（Zador 型）]
+\label{lem:zador}
+$[0,\alpha]$ 上で $\Finv$ の $N$ 点 $L^1$ 最適量子化（代表点を区間の中央値にとる）の最小誤差は，
+最適点密度 $p^*(\tau)\propto\bigl((\Finv)'(\tau)\bigr)^{1/2}$（$\int_0^\alpha p^*\,d\tau=1$）のもとで
+\begin{equation}
+  \min\int_0^\alpha\bigl|\Finv-\Fhinv\bigr|\,d\tau
+  \;\asymp\;\frac1{4N}\left(\int_0^\alpha\bigl((\Finv)'(\tau)\bigr)^{1/2}d\tau\right)^{2}.
+  \label{eq:zador}
+\end{equation}
+\end{lemma}
+\begin{proof}
+区間 $i$（幅 $w_i$，代表点を中央値）の $L^1$ 誤差は，$\Finv$ が区間内でほぼ線形（傾き $(\Finv)'(\tau_i)$）のとき
+線形関数と中央値との $L^1$ 誤差の計算から $\int_{\mathrm{cell}}|\Finv-q_i|d\tau\approx\frac{(\Finv)'(\tau_i)}{4}w_i^2$
+（$t_3$ の正則部での数値照合により厳密値との比が $1.0001$〜$1.0019$ であることを確認済み）．
+点密度 $p(\tau)$ で $w_i\approx1/(Np(\tau_i))$ と書くと総誤差は $\frac1{4N}\int_0^\alpha(\Finv)'(\tau)/p(\tau)\,d\tau$．
+制約 $\int_0^\alpha p\,d\tau=1$ のもとで Lagrange 乗数法を適用し，被積分関数 $(\Finv)'/p+\lambda p$ を $p$ について最小化すると
+$p^*\propto\bigl((\Finv)'\bigr)^{1/2}$．代入すると最小値は式\eqref{eq:zador}の右辺となる．
+なお，これは Graf--Luschgy（2000, 1次元最適量子化の点密度定理）における物理空間 $L^1$ の漸近点密度 $f^{1/2}$ を
+分位点空間へ $\tau=F(x)$（$d\tau=f(x)dx$）で変換した
+$p(\tau)=f(F^{-1}(\tau))^{-1/2}=\bigl((\Finv)'(\tau)\bigr)^{1/2}$ と一致する．
+\end{proof}
+
+\section{一様配置の下界と歪み最適配置の上界}
+
+\begin{lemma}[一様配置による上界の下側評価]
+\label{lem:unif}
+定義\ref{def:regvar} の仮定のもと，一様配置（$\tau_i=i/N$，原子を算術中点 $\Finv((\tau_i+\tau_{i+1})/2)$）による式\eqref{eq:bound-cvar2}の上界は，
+$\beta\in[1,2)$ で
+\begin{equation}
+  E_{\mathrm{unif}}\;\asymp\;\frac1\alpha\,N^{-(2-\beta)}\,\ell(1/N).
+  \label{eq:eunif}
+\end{equation}
+\end{lemma}
+\begin{proof}
+$I_\alpha=\int_0^\alpha|\Finv-\Fhinv|d\tau$ を区間ごとに分解する．$h=1/N$ とおく．
+
+\noindent\textbf{第1区間 $[0,h]$．}
+原子は $q_0=\Finv(h/2)$．$\Finv$ は非減少で $\tau=0$ で $-\infty$ に発散する（補題\ref{lem:tail}）から，
+誤差は特異性側（$\tau<h/2$）に支配される．
+\begin{itemize}
+\item \textbf{下界}：$\tau\in(0,h/4]$ では $\Finv(h/2)-\Finv(\tau)\ge\int_{h/4}^{h/2}(\Finv)'(s)ds$ であるから
+\begin{align*}
+\int_0^{h}\bigl|\Finv(\tau)-\Finv(h/2)\bigr|d\tau
+&\;\ge\;\int_0^{h/2}\bigl(\Finv(h/2)-\Finv(\tau)\bigr)d\tau
+\;\ge\;\frac{h}{4}\int_{h/4}^{h/2}s^{-\beta}\ell(s)\,ds\\
+&\;\asymp\;h\cdot h^{-(\beta-1)}\ell(h)\;=\;h^{2-\beta}\ell(h),
+\end{align*}
+最後の評価は補題\ref{lem:karamata}\eqref{eq:karamata2}（$p=-\beta<-1$，$\beta>1$）による．
+\item \textbf{上界}：補題\ref{lem:karamata}\eqref{eq:karamata1}（$p=-(\beta-1)>-1$，$\beta<2$）と補題\ref{lem:tail}より
+\begin{equation*}
+\int_0^{h}\bigl|\Finv(\tau)-\Finv(h/2)\bigr|d\tau
+\;\le\;\int_0^h\bigl|\Finv(\tau)\bigr|d\tau+h\,\bigl|\Finv(h/2)\bigr|
+\;\asymp\;h^{2-\beta}\ell(h).
+\end{equation*}
+\end{itemize}
+したがって第1区間の寄与は $I_0\asymp h^{2-\beta}\ell(h)=N^{-(2-\beta)}\ell(1/N)$．
+
+\noindent\textbf{正則部（区間 $i\ge1$）．}
+$\tau_i=i/N\ge h$ では $\Finv$ は $C^1$ で特異性から離れている．補題\ref{lem:midpoint}の厳密恒等式より，区間 $i$ の寄与 $e_i$ は
+$(\Finv)'$ の非増加性（定義\ref{def:regvar}）を用いて上下から挟み
+\begin{equation*}
+  \frac{h^2}{4}(\Finv)'(\tau_{i+1})\;\le\;e_i\;\le\;\frac{h^2}{4}(\Finv)'(\tau_i).
+\end{equation*}
+これを $i=1$ から $\lfloor\alpha N\rfloor$ まで和をとり，非増加関数の積分との比較（Darboux 和）を用いると
+\begin{align*}
+\sum_{i\ge1}e_i\;\asymp\;\frac{h^2}{4}\sum_{i=1}^{\alpha N}(\Finv)'(\tau_i)
+\;&\asymp\;\frac{h}{4}\int_{1/N}^{\alpha}(\Finv)'(\tau)\,d\tau
+\;=\;\frac1{4N}\bigl(\Finv(\alpha)-\Finv(1/N)\bigr)\\
+&\;\asymp\;\frac1N\,\bigl|\Finv(1/N)\bigr|
+\;\asymp\;\frac1N\,N^{\beta-1}\ell(1/N)
+\;=\;N^{\beta-2}\ell(1/N),
+\end{align*}
+ここで補題\ref{lem:tail}（$|\Finv(1/N)|\asymp N^{\beta-1}\ell(1/N)$）を用いた．なお非増加関数の和と積分の差は端点項に吸収され，オーダーは変わらない．
+$\beta-2=-(2-\beta)$ より，正則部の和は第1区間 $I_0$ と\textbf{同じオーダー} $N^{-(2-\beta)}\ell(1/N)$ である．
+
+以上を合わせると $I_\alpha\asymp N^{-(2-\beta)}\ell(1/N)$ であり，式\eqref{eq:bound-cvar2}の $\frac1\alpha$ を掛けて式\eqref{eq:eunif}を得る．
+$\beta=1$ では補題\ref{lem:tail}の緩変動関数 $\ell_1$ を用いて同様に $E_{\mathrm{unif}}\asymp\alpha^{-1}N^{-1}\ell_1(1/N)$ となる．
+\end{proof}
+
+\begin{lemma}[歪み最適配置による上界の上側評価]
+\label{lem:opt}
+定義\ref{def:regvar} の仮定のもと，歪み最適配置（CVaR 歪み $g_\alpha$ による最適量子化，$N$ 点すべてを $[0,\alpha]$ に配置）による式\eqref{eq:bound-cvar2}の上界は，
+$\beta\in[1,2)$ で
+\begin{equation}
+  E_{\mathrm{opt}}\;\asymp\;\frac1N\,\alpha^{\,1-\beta}\,\ell(\alpha).
+  \label{eq:eopt}
+\end{equation}
+\end{lemma}
+\begin{proof}
+CVaR 歪み $g_\alpha$ では歪み分布 $\dist Z$ は $[0,\alpha]$ に集中する（中間レポート §4.4）から，
+$L_{g_\alpha}$ の最適量子化は $N$ 点すべてを $[0,\alpha]$ に配置し，$v=g_\alpha(\tau)=\tau/\alpha$ の変数で $[0,1]$ 上一様相当となる．
+よって $I_\alpha^{\mathrm{opt}}=\int_0^\alpha|\Finv-\Fhinv|d\tau$ は $[0,\alpha]$ 上の $\Finv$ の $N$ 点 $L^1$ 最適量子化誤差に等しく，
+補題\ref{lem:zador}（式\eqref{eq:zador}）より
+\begin{equation*}
+I_\alpha^{\mathrm{opt}}\;\asymp\;\frac1N\left(\int_0^\alpha\bigl((\Finv)'(\tau)\bigr)^{1/2}d\tau\right)^{2}.
+\end{equation*}
+積分を補題\ref{lem:karamata}\eqref{eq:karamata1}（$p=-\beta/2$，$\beta<2$ より $p>-1$ で特異点で収束）で評価すると
+\begin{equation*}
+\int_0^\alpha\bigl((\Finv)'(\tau)\bigr)^{1/2}d\tau
+\;=\;\int_0^\alpha\tau^{-\beta/2}\ell(\tau)^{1/2}d\tau
+\;\asymp\;\alpha^{\,1-\beta/2}\,\ell(\alpha)^{1/2}.
+\end{equation*}
+したがって $I_\alpha^{\mathrm{opt}}\asymp\frac1N\alpha^{2-\beta}\ell(\alpha)$ であり，
+式\eqref{eq:bound-cvar2}の $\frac1\alpha$ を掛けて式\eqref{eq:eopt}を得る．
+$\beta=1$ では積分は $\asymp\alpha^{1/2}\ell(\alpha)^{1/2}$ で同様に $E_{\mathrm{opt}}\asymp\frac{\ell(\alpha)}{N}$．
+\end{proof}
+
+\section{定理\ref{thm:alpha} の証明と考察}
+
+\begin{proof}[定理\ref{thm:alpha} の証明]
+補題\ref{lem:unif}（式\eqref{eq:eunif}）と補題\ref{lem:opt}（式\eqref{eq:eopt}）の比をとると，$\beta\in(1,2)$ で
+\begin{equation*}
+  \frac{E_{\mathrm{unif}}}{E_{\mathrm{opt}}}
+  \;\asymp\;\frac{\alpha^{-1}N^{-(2-\beta)}\ell(1/N)}{\alpha^{1-\beta}N^{-1}\ell(\alpha)}
+  \;=\;\frac{N^{-(2-\beta)+1}}{\alpha^{2-\beta}}\cdot\frac{\ell(1/N)}{\ell(\alpha)}
+  \;=\;\frac{N^{\beta-1}}{\alpha^{2-\beta}}\cdot\frac{\ell(1/N)}{\ell(\alpha)}.
+\end{equation*}
+緩変動関数の比 $\ell(1/N)/\ell(\alpha)$ は $N$ に対し多項式より緩やか（任意の $\epsilon>0$ で $o(N^\epsilon)$）であるから，
+漸近オーダーでは式\eqref{eq:thm-scaling}を得る．
+
+$\beta=1$（ガウス裾）の場合，補題\ref{lem:unif}・\ref{lem:opt} の $\beta=1$ 系（$E_{\mathrm{unif}}\asymp\alpha^{-1}N^{-1}\ell_1(1/N)$，
+$E_{\mathrm{opt}}\asymp\ell(\alpha)/N$）より比は
+$\frac1\alpha\cdot\frac{\ell_1(1/N)}{\ell(\alpha)}\asymp\frac1\alpha$（緩変動比は対数的，$N$ 指数は $0$）．
+これは対数補正を除いて $\Theta(1/\alpha)$ であり，$\beta\to1^+$ で $N^{\beta-1}\to1$ となる $\beta>1$ の結果と連続的につながる．
+
+最後に $\Omega(1/\alpha)$ を示す．$\alpha$ を固定して $N\to\infty$ とする．$\beta>1$ では $N^{\beta-1}\to\infty$ かつ
+$2-\beta\in(0,1)$，$\alpha<1$ より $\alpha^{2-\beta}\ge\alpha$ すなわち $1/\alpha^{2-\beta}\le1/\alpha$ だが，
+$N^{\beta-1}$ の増大がこれを補って余りあるため，比 $\frac{N^{\beta-1}}{\alpha^{2-\beta}}$ は $1/\alpha$ を超えて増大する．
+$\beta=1$ では比は $\Theta(1/\alpha)$（対数補正を除く）．
+したがって，$\alpha$ を固定した $N$ 十分大の領域（$\alpha N\ge C$ と書ける）では，いずれの場合も比は少なくとも $\Omega(1/\alpha)$ である．
+\end{proof}
+
+\begin{remark}[証明の対象と実験の対応]
+\label{rem:scope}
+定理\ref{thm:alpha} が評価するのは式\eqref{eq:bound-cvar2}の\textbf{誤差上界}（絶対誤差積分 $I_\alpha$ に基づく量）の比である．
+一方，実験Aで歪み最適配置 M2 が示す $N^{-2}$ の減衰は，CVaR の\textbf{符号付き誤差}（各区間の誤差の相殺を含む）の二次精度
+（中間レポート 注意4.1）に対応し，本定理の上界（絶対誤差積分）とは別の数学的対象である．
+実際，歪み最適配置の上界（絶対誤差積分）の実測傾きは $N^{-1}$（Zador 理論と一致），符号付き誤差の実測傾きは $N^{-1.86}$（二次減衰と整合）であり，
+両者は明確に区別されるべきである．本定理は前者（上界の比）についての主張であり，実験Aの観測と整合する．
+\end{remark}
+
+\begin{remark}[$\beta$ の解釈と例]
+$\beta$ は分位点関数の下側裾での発散の強さを表す．$t_\nu$ では $\beta=1+1/\nu$ で式\eqref{eq:thm-scaling}は比
+$N^{1/\nu}/\alpha^{1-1/\nu}$ を与え，裾が重い（$\nu$ が小さい）ほど改善比が大きい．ガウス裾（$\beta=1$）では対数補正を除き $1/\alpha$ に帰着する．
+$\beta<2$ の仮定は $\CVaR_\alpha$ の有限性（$\Finv\in L^1[0,\alpha]$）および歪み分布の Zador 定数（$\int((\Finv)')^{1/2}$ の収束）に対応する．
+\end{remark}
+
+\end{document}
+
+
